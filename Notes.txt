@@ -1,0 +1,11 @@
+In summary, MongoDB Compass is a tool to visualize and interact with data stored in a MongoDB database,
+and MongoDB Atlas is a cloud-based service that hosts and manages MongoDB databases,
+including the actual storage of data.
+
+1->(done) how does select work with populate and what does it return and how to select some fields 
+  const retweets = await Retweet.find({user: req.params.userId}).select("tweet, -_id").populate({
+    path: "tweet",
+    select: ""
+  }) 
+  
+here we find all object and select tweet from it and to select fields from populated we use .populate({path: "tweet",select: ""}) 
