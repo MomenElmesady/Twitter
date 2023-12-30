@@ -45,4 +45,8 @@ const tweetSchema = mongoose.Schema({
   }
 })
 
+// tweetSchema.pre(/^find/,function(next){
+//   this.sort("timestamp")
+//   next()
+// })
 module.exports = mongoose.model("Tweet", tweetSchema)
