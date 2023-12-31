@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser")
 
 // routes 
 const userRouter = require("./routes/userRouter")
+const notifictionRouter = require("./routes/notificationRouter")
 
 const DB = process.env.DB
 mongoose.connect(DB, {
@@ -21,6 +22,7 @@ const app = express()
 app.use(express.json())
 app.use(cookieParser())
 app.use("/tweeter/users", userRouter)
+app.use("/tweeter/notifications", notifictionRouter)
 
 app.use((err, req, res, next) => {
     res.status(err.statusCode || 500).json({
