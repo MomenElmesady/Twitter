@@ -4,10 +4,15 @@ const tweetController = require("../controllers/tweetController")
 const likeController = require("../controllers/likeController")
 const commentController = require("../controllers/commentController")
 const retweetController = require("../controllers/retweetController")
+const userController = require("../controllers/userController")
 const router = express.Router({mergeParams: true})
 
 router.post("/createTweet",authController.protect,tweetController.createTweet)
 router.route("/:tweetId").get(tweetController.getTweet).patch(tweetController.updateTweet).delete(tweetController.deleteTweet)
+
+// get tweets
+router.get("/getTweets/:userId",userController.getTweetsForUser)
+router.get("/getReTweets/:userId",retweetController.getReTweetsForUser)
 
 // like 
 router.post("/like/:tweetId",authController.protect,likeController.like)
@@ -20,5 +25,7 @@ router.get("/getAllComments/:tweetId",authController.protect,commentController.g
 // retweet 
 router.post("/retweet/:tweetId",authController.protect,retweetController.retweet)
 router.delete("/deleteRetweet/:retweetId",authController.protect,retweetController.deleteRetweet)
+
+
 
 module.exports = router 

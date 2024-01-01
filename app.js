@@ -7,6 +7,8 @@ const cookieParser = require("cookie-parser")
 
 // routes 
 const userRouter = require("./routes/userRouter")
+const tweetRouter = require("./routes/tweetRouter")
+const followRouter = require("./routes/followRouter")
 const notifictionRouter = require("./routes/notificationRouter")
 
 const DB = process.env.DB
@@ -22,6 +24,9 @@ const app = express()
 app.use(express.json())
 app.use(cookieParser())
 app.use("/tweeter/users", userRouter)
+app.use("/tweeter/tweets", tweetRouter)
+app.use("/tweeter/follows", followRouter)
+
 app.use("/tweeter/notifications", notifictionRouter)
 
 app.use((err, req, res, next) => {
