@@ -8,15 +8,15 @@ const notificationSchema = mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['follow', 'like', 'retweet', 'mention'], // Add more types as needed
-    required: [true,"should have type"],
+    enum: ['follow', 'like', 'retweet', "comment", 'mention'], // Add more types as needed
+    required: [true, "should have type"],
   },
   content: {
     type: String,
-    required: [true , "should have content"]
+    required: [true, "should have content"]
   },
-  timestamp : {
-    type: Date ,
+  timestamp: {
+    type: Date,
     default: Date.now()
   },
   isRead: {
@@ -26,4 +26,4 @@ const notificationSchema = mongoose.Schema({
 })
 
 
-module.exports = mongoose.model("Notification",notificationSchema)
+module.exports = mongoose.model("Notification", notificationSchema)

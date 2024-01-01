@@ -20,6 +20,12 @@ exports.retweet = catchAsync(async (req, res, next) => {
   retweet = await Retweet.create({ user: req.user._id, tweet: req.params.tweetId })
   tweet.retweets += 1
   tweet.save({ validateBeforeSave: false })
+  
+  await Notification.create({
+    user: tweet.user,
+    type: "retweet",
+    content: `${req.user.name} retweet your tweet ${tweet._id}.`
+  })
   res.status(200).json({
     status: "success",
     data: retweet

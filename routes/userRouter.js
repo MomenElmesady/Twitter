@@ -24,6 +24,7 @@ router.patch("/updatePassword", authController.protect, authController.updatePas
 router.get("/getMe", authController.protect, userController.getMe)
 router.patch("/updateMe", authController.protect, userController.updateMe)
 
+router.get("/notifications",authController.protect,userController.getUserNotifications)
 
 router.route("/:userId").get(userController.getUser)
   .delete(userController.deleteUser)

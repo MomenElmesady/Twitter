@@ -2,6 +2,7 @@ const User = require("../models/userModel")
 const catchAsync = require("../utils/catchAsync")
 const multer = require("multer")
 const Follow  = require("../models/followingModel")
+const Notification  = require("../models/notificationModel")
 const mongoose = require("mongoose")
 const Tweet = require("../models/tweetModel")
 
@@ -139,4 +140,13 @@ exports.getTweetsForUser = catchAsync(async(req,res,next)=>{
   })
 })
 
+// get notifications for user and mark the unread 
+exports.getUserNotifications = catchAsync(async(req,res,next)=>{
+  const notifications = await Notification.find({user: req.user._id})
+  await Notification.updateMany({ user: req.user._id ,isRead: false}, { $set: { isRead: true } });
+  res.status(200).json({
+    status: "success",
+    data: notifications
+  })
+})
 // search by name in someone followers 
