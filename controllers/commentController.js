@@ -14,10 +14,11 @@ exports.createComment = catchAsync(async (req, res, next) => {
   const { content } = req.body;
   // Check if a file is uploaded
   if (req.file) {
+    // i should store actual url oh the photo (the path oh the photo)
     const mediaUrl = req.file.originalname; // Replace with actual media URL
     // Create tweet with mediaUrl
     const comment = await Tweet.create({
-      tweet:req.params.tweetId,
+      tweet: req.params.tweetId,
       user: req.user._id,
       content,
       mediaUrl,

@@ -28,7 +28,6 @@ start at 17/12/2023
 
 
 [1/1/2024 2 : 15 AM --mon] and i should execute this tasks tomorow 
-1-> review getFollowing 
-2-> complete searchInFollowings
-3-> upload photo in tweet 
-4-> 
+1-> review getFollowing (Done)
+2-> complete searchInFollowings (Done)
+3-> upload photo in tweet (Done)
