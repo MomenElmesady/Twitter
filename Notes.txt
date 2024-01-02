@@ -9,3 +9,9 @@ including the actual storage of data.
   }) 
   
 here we find all object and select tweet from it and to select fields from populated we use .populate({path: "tweet",select: ""}) 
+
+
+// upload photo 
+to upload photo with tweet or comment we use multer middleWare before createTweet, 
+check in createTweet if there is file create tweet with photo path else create simple tweet 
+
