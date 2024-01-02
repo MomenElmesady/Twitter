@@ -127,19 +127,6 @@ exports.getAllFollowing = catchAsync(async (req, res, next) => {
     })
 });
 
-exports.getTweetsForUser = catchAsync(async(req,res,next)=>{
-  const tweetsquery =  Tweet.find({user: req.params.userId})
-  const page = req.query.page*1 || 1 
-  const limit = req.query.limit*1 || 100
-  const skip = (page-1)*limit 
-  tweetsquery.skip(skip).limit(limit)
-  const tweets = await tweetsquery
-  res.status(200).json({
-    status: "success",
-    data: tweets
-  })
-})
-
 // get notifications for user and mark the unread 
 exports.getUserNotifications = catchAsync(async(req,res,next)=>{
   const notifications = await Notification.find({user: req.user._id})
@@ -149,4 +136,4 @@ exports.getUserNotifications = catchAsync(async(req,res,next)=>{
     data: notifications
   })
 })
-// search by name in someone followers 
+

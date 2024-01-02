@@ -54,3 +54,41 @@ exports.unFollow = catchAsync(async (req, res, next) => {
     message: "the unfollow happend successfully"
   })
 })
+
+// search by name in someone followers 
+exports.searchInFollowers = catchAsync(async(req,res,next)=>{
+  const users = await User.find({name: req.body.name})
+  const userIds = users.map(user => user._id);
+  const isFollow = await Follow.findOne({ follower: { $in: userIds }, followed: req.params.userId}).populate("follower")
+  if (isFollow){
+    res.status(200).json({
+      status: "success",
+      data: isFollow.follower
+    })
+  }
+  else {
+      res.status(200).json({
+        status: "success",
+        data: null
+      })
+  }
+})
+
+// search by name in someone followeings 
+exports.searchInFollowings = catchAsync(async(req,res,next)=>{
+  const users = await User.find({name: req.body.name})
+  const userIds = users.map(user => user._id);
+  const isFollow = await Follow.findOne({ followed: { $in: userIds }, follower: req.params.userId}).populate("followed")
+  if (isFollow){
+    res.status(200).json({
+      status: "success",
+      data: isFollow.followed
+    })
+  }
+  else {
+      res.status(200).json({
+        status: "success",
+        data: null
+      })
+  }
+})

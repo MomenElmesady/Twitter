@@ -11,7 +11,7 @@ router.post("/createTweet",authController.protect,tweetController.createTweet)
 router.route("/:tweetId").get(tweetController.getTweet).patch(tweetController.updateTweet).delete(tweetController.deleteTweet)
 
 // get tweets
-router.get("/getTweets/:userId",userController.getTweetsForUser)
+router.get("/getTweets/:userId",tweetController.getTweetsForUser)
 router.get("/getReTweets/:userId",retweetController.getReTweetsForUser)
 
 // like 

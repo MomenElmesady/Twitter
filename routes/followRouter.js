@@ -17,4 +17,7 @@ router.get("/getFollowers/:userId", userController.getAllFollowers)
 router.get("/getFollowing/:userId", userController.getAllFollowing)
 
 
+router.get("/searchInFollowers/:userId",followController.searchInFollowers)
+router.get("/searchInFollowings/:userId",followController.searchInFollowings)
+
 module.exports = router

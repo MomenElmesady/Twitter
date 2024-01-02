@@ -48,3 +48,15 @@ exports.getLikes = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.getTweetsForUser = catchAsync(async(req,res,next)=>{
+  const tweetsquery =  Tweet.find({user: req.params.userId}).sort({timestamp: -1, likes:-1})
+  const page = req.query.page*1 || 1 
+  const limit = req.query.limit*1 || 100
+  const skip = (page-1)*limit 
+  tweetsquery.skip(skip).limit(limit)
+  const tweets = await tweetsquery
+  res.status(200).json({
+    status: "success",
+    data: tweets
+  })
+})
