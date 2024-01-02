@@ -59,7 +59,7 @@ exports.unFollow = catchAsync(async (req, res, next) => {
 exports.searchInFollowers = catchAsync(async(req,res,next)=>{
   const users = await User.find({name: req.body.name})
   const userIds = users.map(user => user._id);
-  const isFollow = await Follow.findOne({ follower: { $in: userIds }, followed: req.params.userId}).populate("follower")
+  const isFollow = await Follow.findOne({ follower: { $in: userIds }, followed: req.params.userId}).populate("follower","name")
   if (isFollow){
     res.status(200).json({
       status: "success",
@@ -78,7 +78,7 @@ exports.searchInFollowers = catchAsync(async(req,res,next)=>{
 exports.searchInFollowings = catchAsync(async(req,res,next)=>{
   const users = await User.find({name: req.body.name})
   const userIds = users.map(user => user._id);
-  const isFollow = await Follow.findOne({ followed: { $in: userIds }, follower: req.params.userId}).populate("followed")
+  const isFollow = await Follow.findOne({ followed: { $in: userIds }, follower: req.params.userId}).populate("followed","name")
   if (isFollow){
     res.status(200).json({
       status: "success",
@@ -92,3 +92,44 @@ exports.searchInFollowings = catchAsync(async(req,res,next)=>{
       })
   }
 })
+
+
+// there is two way of finding followers and following i dont know what is better 
+exports.getAllFollowers = catchAsync(async (req, res, next) => {
+  const followers = await Follow.aggregate([
+    {
+      $match: { followed: mongoose.Types.ObjectId(req.params.userId) },
+    },
+    {
+      $lookup: {
+        from: 'users', 
+        localField: 'followed',
+        foreignField: '_id',
+        as: 'followed',
+      },
+    },
+    {
+      $unwind: '$followed', // Unwind the array created by $lookup
+    },
+    {
+      $project: {
+        _id: 0,
+        followed: { _id: 1, name: 1 }, // Include only the _id and name fields
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    data: followers,
+  });
+});
+
+
+exports.getAllFollowing = catchAsync(async (req, res, next) => {
+  const followers = await Follow.find({ follower: req.params.userId }).select("followed -_id").populate("followed","name"); 
+    res.status(200).json({
+      status: "success",
+      data: followers
+    })
+});

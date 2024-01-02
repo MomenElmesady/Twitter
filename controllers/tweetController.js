@@ -2,12 +2,32 @@ const catchAsync = require("../utils/catchAsync");
 const Tweet = require("../models/tweetModel")
 const Like = require("../models/likeModel")
 
+
 exports.createTweet = catchAsync(async(req,res,next)=>{
-  const tweet = await Tweet.create({user: req.user._id, content: req.body.content })
-  res.status(200).json({
-    status: "success",
-    data: tweet
-  })
+  const { content } = req.body;
+  // Check if a file is uploaded
+  if (req.file) {
+    const mediaUrl = req.file.originalname; // Replace with actual media URL
+    // Create tweet with mediaUrl
+    const tweet = await Tweet.create({
+      user: req.user._id,
+      content,
+      mediaUrl,
+      type: "photo"
+    });
+
+    res.status(200).json({
+      status: "success",
+      data: tweet,
+    });
+  } else {
+    // No file uploaded, create tweet without media
+    const tweet = await Tweet.create({ user: req.user._id, content });
+    res.status(200).json({
+      status: "success",
+      data: tweet,
+    });
+  }
 })
 
 exports.getTweet = catchAsync(async(req,res,next)=>{

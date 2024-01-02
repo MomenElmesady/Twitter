@@ -1,10 +1,8 @@
 const User = require("../models/userModel")
 const catchAsync = require("../utils/catchAsync")
 const multer = require("multer")
-const Follow  = require("../models/followingModel")
 const Notification  = require("../models/notificationModel")
-const mongoose = require("mongoose")
-const Tweet = require("../models/tweetModel")
+
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -86,46 +84,6 @@ exports.updatePhoto = (photo) => {
     })
   }
 }
-
-// there is two way of finding followers and following i dont know what is better 
-exports.getAllFollowers = catchAsync(async (req, res, next) => {
-  const followers = await Follow.aggregate([
-    {
-      $match: { followed: mongoose.Types.ObjectId(req.params.userId) },
-    },
-    {
-      $lookup: {
-        from: 'users', 
-        localField: 'followed',
-        foreignField: '_id',
-        as: 'followed',
-      },
-    },
-    {
-      $unwind: '$followed', // Unwind the array created by $lookup
-    },
-    {
-      $project: {
-        _id: 0,
-        followed: { _id: 1, name: 1 }, // Include only the _id and name fields
-      },
-    },
-  ]);
-
-  res.status(200).json({
-    status: 'success',
-    data: followers,
-  });
-});
-
-
-exports.getAllFollowing = catchAsync(async (req, res, next) => {
-  const followers = await Follow.find({ follower: req.params.userId }).select("follower -_id").populate("follower","name"); 
-    res.status(200).json({
-      status: "success",
-      data: followers
-    })
-});
 
 // get notifications for user and mark the unread 
 exports.getUserNotifications = catchAsync(async(req,res,next)=>{
