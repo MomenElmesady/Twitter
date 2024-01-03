@@ -15,3 +15,12 @@ here we find all object and select tweet from it and to select fields from popul
 to upload photo with tweet or comment we use multer middleWare before createTweet, 
 check in createTweet if there is file create tweet with photo path else create simple tweet 
 
+In terms of performance, the aggregation pipeline approach might be more efficient for larger datasets because 
+it minimizes the data transferred between the database and the application. 
+Additionally, if you have indexes on the relevant fields (name, _id, follower, followed), the performance can be further optimized.
+
+
+To search in someOne followers -> use aggregate: (there is voice in whatsapp) 
+1) find all users with this name , 
+2) lookup all follows which follower has this name, 
+3) git all follows which follower has the name and followed the user id  

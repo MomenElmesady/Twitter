@@ -31,3 +31,13 @@ start at 17/12/2023
 1-> review getFollowing (Done)
 2-> complete searchInFollowings (Done)
 3-> upload photo in tweet (Done)
+
+
+
+[3/1/2024 2 : 15 AM --mon] 
+1-> refactor follow operations (Done)
+2-> compare between follow before and after refactor and why we refactor 
+3-> review search in followers and followings 
+4-> refactor other routes 
+5-> create indexs in all collections and search in index concept (in chat gpt [index])
+
