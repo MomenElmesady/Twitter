@@ -6,30 +6,26 @@ const Like = require("../models/likeModel")
 exports.createTweet = catchAsync(async (req, res, next) => {
   const { content } = req.body;
   // Check if a file is uploaded
+  const tweetData = {
+    content,
+    user: req.user._id
+  }
+  // Check if a file is uploaded
   if (req.file) {
     // i should store actual url oh the photo (the path oh the photo)
     const mediaUrl = req.file.originalname; // Replace with actual media URL
     // Create tweet with mediaUrl
-    const tweet = await Tweet.create({
-      user: req.user._id,
-      content,
-      mediaUrl,
-      type: "photo"
-    });
-
-    res.status(200).json({
-      status: "success",
-      data: tweet,
-    });
-  } else {
-    // No file uploaded, create tweet without media
-    const tweet = await Tweet.create({ user: req.user._id, content });
-    res.status(200).json({
-      status: "success",
-      data: tweet,
-    });
+    tweetData.mediaUrl = mediaUrl
+    tweetData.type = "photo"
   }
-})
+  // No file uploaded, create tweet without media
+  const tweet = await Tweet.create(tweetData);
+  res.status(200).json({
+    status: "success",
+    data: tweet,
+  });
+}
+)
 
 exports.getTweet = catchAsync(async (req, res, next) => {
   const tweet = await Tweet.findById(req.params.tweetId)
@@ -54,10 +50,9 @@ exports.deleteTweet = catchAsync(async (req, res, next) => {
   })
 })
 
-// we can do this in getFollowers 
+// we can use aggregate like (getAllFollowers) its better in performance 
 exports.getLikes = catchAsync(async (req, res, next) => {
-  const likes = await Like.find({ tweet: req.params.tweetId }).populate("user", "name");
-
+  const likes = await Like.find({ tweet: req.params.tweetId }).populate("user", "name profilePic");
   const likeNames = likes.map((like) => ({
     name: like.user.name,
     photo: like.user.profilePic,

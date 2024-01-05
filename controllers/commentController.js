@@ -12,31 +12,27 @@ exports.createComment = catchAsync(async (req, res, next) => {
   })
 
   const { content } = req.body;
+
+  const commentData = {
+    content,
+    user: req.user._id,
+    tweet: req.params.tweetId
+  }
   // Check if a file is uploaded
   if (req.file) {
     // i should store actual url oh the photo (the path oh the photo)
     const mediaUrl = req.file.originalname; // Replace with actual media URL
     // Create tweet with mediaUrl
-    const comment = await Tweet.create({
-      tweet: req.params.tweetId,
-      user: req.user._id,
-      content,
-      mediaUrl,
-      type: "photo"
-    });
-
-    res.status(200).json({
-      status: "success",
-      data: comment,
-    });
-  } else {
-    // No file uploaded, create tweet without media
-    const comment = await Tweet.create({ user: req.user._id, content });
-    res.status(200).json({
-      status: "success",
-      data: comment,
-    });
+    commentData.mediaUrl = mediaUrl
+    commentData.type = "photo"
   }
+
+  // No file uploaded, create tweet without media
+  const comment = await Tweet.create(commentData);
+  res.status(200).json({
+    status: "success",
+    data: comment,
+  });
 })
 
 

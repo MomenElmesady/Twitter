@@ -1,26 +1,19 @@
 const Retweet = require("../models/retweetModel")
 const Tweet = require("../models/tweetModel")
+const Notification = require("../models/notificationModel")
 const catchAsync = require("../utils/catchAsync")
 
 exports.retweet = catchAsync(async (req, res, next) => {
-  let tweet = Tweet.findById(req.params.tweetId)
+  let tweet = await Tweet.findById(req.params.tweetId)
   if (!tweet) {
     return res.status(400).json({
       status: "fail",
       message: "cant find tweet with this id!"
     })
   }
-  let retweet = await Retweet.findOne({ user: req.user._id, tweet: req.params.tweetId })
-  if (retweet) {
-    return res.status(400).json({
-      status: "fail",
-      message: "this user retweet this tweet already!"
-    })
-  }
-  retweet = await Retweet.create({ user: req.user._id, tweet: req.params.tweetId })
-  tweet.retweets += 1
-  tweet.save({ validateBeforeSave: false })
-  
+  // create index to prevent duplicate 
+  const retweet = await Retweet.create({ user: req.user._id, tweet: req.params.tweetId })
+  await tweet.updateOne({ $inc: { retweets: 1 } })  
   await Notification.create({
     user: tweet.user,
     type: "retweet",
@@ -33,20 +26,18 @@ exports.retweet = catchAsync(async (req, res, next) => {
 })
 
 exports.deleteRetweet = catchAsync(async(req,res,next)=>{
-  const retweet = await Retweet.findById(req.params.retweetId)
+  const retweet =await Retweet.findByIdAndDelete(req.params.retweetId)
   if (!retweet) {
     return res.status(400).json({
       status: "fail",
       message: "cant find retweet with this id!"
     })
   }
-  let tweet = Tweet.findById(retweet.tweet)
-  tweet.retweets-=1 
-  tweet.save({validateBeforeSave: false})
-  await Retweet.findByIdAndDelete(req.params.retweetId)
+  Tweet.findByIdAndUpdate(retweet.tweet,{$inc: {retweets: -1}})
+
   res.status(200).json({
     status: "success",
-    mesaage: "dleted successfully"
+    mesaage: "deleted successfully"
   })
 })
 
@@ -57,5 +48,4 @@ exports.getReTweetsForUser = catchAsync(async(req,res,next)=>{
     status: "success",
     data: retweets
   })
-
 })

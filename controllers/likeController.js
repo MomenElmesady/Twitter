@@ -7,13 +7,11 @@ exports.like = catchAsync(async (req, res, next) => {
   const tweet = await Tweet.findById(req.params.tweetId)
   const checkLike = await Like.findOne({ user: req.user._id, tweet: tweet._id })
   if (checkLike) {
-    tweet.likes -= 1
-    await tweet.save({ validateBeforeSave: false })
+    await Tweet.findByIdAndUpdate(tweet._id,{likes:tweet.likes-1})
     await Like.findByIdAndDelete(checkLike._id)
   }
   else {
-    tweet.likes += 1
-    await tweet.save({ validateBeforeSave: false })
+    await Tweet.findByIdAndUpdate(tweet._id,{likes:tweet.likes+1})
     await Like.create({ user: req.user._id, tweet: tweet._id })
     await Notification.create({
       user: tweet.user,

@@ -18,6 +18,9 @@ const reTweetSchema = mongoose.Schema({
   },
 })
 
+reTweetSchema.index({ user: 1, tweet: 1 }, { unique: true })
+
+
 reTweetSchema.pre(/^find/,function(next){
   this.select("tweet, -_id").populate({
     path: "tweet",
