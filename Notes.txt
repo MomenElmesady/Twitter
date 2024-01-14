@@ -41,3 +41,10 @@ and to use the save method when you need to update a document and return the upd
 
 [[Note]]
 We can use updateOne on the document itSelf not model --> user.updateOne({x:y})
+
+[[replaceRoot]]
+The $replaceRoot stage in the MongoDB aggregation pipeline is used to replace the existing root document with a new one.
+This stage is particularly useful when you want to reshape the output of your aggregation pipeline.
+Now, after these stages, you have a document structure with a field named "tweet" containing the content of the matching tweets.
+The $replaceRoot stage is introduced to replace the root document with the content of the "tweet" field, 
+effectively promoting "tweet" to the top-level structure.

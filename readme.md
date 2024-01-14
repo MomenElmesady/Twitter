@@ -38,6 +38,15 @@ start at 17/12/2023
 1-> refactor follow operations (Done)
 2-> compare between follow before and after refactor and why we refactor (Done)
 3-> review search in followers and followings (Done)
-4-> refactor other routes (still user and auth)
-5-> create indexs in all collections and search in index concept (in chat gpt [index])
+4-> refactor other routes (still user and auth) (Done)
+5-> create indexs in all collections and search in index concept (in chat gpt [index]) (Work on next stage)
 6-> add block operations 
+
+[6/1/2024 2 : 15 AM --sat]
+1-> still search about indexing and know what is (Use MongoDB's explain method ) and (Use the MongoDB Profiler) -> there is photo in whatsapp
+2-> watch vedio [mongo arctecture on hussine nasser] and other database vedios 
+
+
+
+
+/////// review timeLine and refactor it and add block and mute 

@@ -6,6 +6,8 @@ const followController = require("../controllers/followController")
 
 const router = express.Router()
 
+router.get("/timeLine",authController.protect,userController.timeLine)
+
 router.route("/register").post(authController.register)
 router.route("/verify/:token").post(authController.verify)
 router.post("/sendVerfication", authController.sendVerivicationEmail)
@@ -28,8 +30,6 @@ router.get("/notifications",authController.protect,userController.getUserNotific
 
 router.route("/:userId").get(userController.getUser)
   .delete(userController.deleteUser)
-
-
 
 
 

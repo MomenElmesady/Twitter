@@ -1,7 +1,8 @@
 const User = require("../models/userModel")
 const catchAsync = require("../utils/catchAsync")
 const multer = require("multer")
-const Notification  = require("../models/notificationModel")
+const Notification = require("../models/notificationModel")
+const Follow = require("../models/followingModel")
 
 
 const multerStorage = multer.diskStorage({
@@ -86,12 +87,41 @@ exports.updatePhoto = (photo) => {
 }
 
 // get notifications for user and mark the unread 
-exports.getUserNotifications = catchAsync(async(req,res,next)=>{
-  const notifications = await Notification.find({user: req.user._id})
-  await Notification.updateMany({ user: req.user._id ,isRead: false}, { $set: { isRead: true } });
+exports.getUserNotifications = catchAsync(async (req, res, next) => {
+  const notifications = await Notification.find({ user: req.user._id })
+  await Notification.updateMany({ user: req.user._id, isRead: false }, { $set: { isRead: true } });
   res.status(200).json({
     status: "success",
     data: notifications
   })
 })
 
+
+exports.timeLine = catchAsync(async (req, res, next) => {
+  const state = await Follow.aggregate([
+    {
+      $match: { follower: req.user._id }
+    },
+    
+    {
+      $lookup: {
+        from: "tweets",
+        localField: "followed",
+        foreignField: "user",
+        as: "tweet"
+      }
+    },
+    {
+      $unwind: '$tweet'
+    },
+    // دخلت للتويت وفكست للاوبجكت الاصلي 
+    {
+      $replaceRoot: { newRoot: "$tweet" }
+    },
+  ]);
+
+  res.status(200).json({
+    data: state
+  });
+});
+// replaceRoot explained in notes 
