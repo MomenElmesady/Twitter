@@ -118,6 +118,29 @@ exports.timeLine = catchAsync(async (req, res, next) => {
     {
       $replaceRoot: { newRoot: "$tweet" }
     },
+    
+    // add date to in day and month and year only to sort it from latest and for each day sort through likesand comments 
+    {
+      $addFields: {
+        date: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$timestamp",
+            timezone: "UTC"
+          }
+        }
+      }
+    },
+    {
+      $sort: {
+        date: -1 , likes: -1 , comments: -1
+      }
+    },
+    // {
+    //   $project: {
+    //     date: 0
+    //   }
+    // }
   ]);
 
   res.status(200).json({
