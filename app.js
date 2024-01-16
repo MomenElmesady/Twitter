@@ -8,6 +8,7 @@ const cookieParser = require("cookie-parser")
 // routes 
 const userRouter = require("./routes/userRouter")
 const tweetRouter = require("./routes/tweetRouter")
+const blockRouter = require("./routes/blockRouter")
 const followRouter = require("./routes/followRouter")
 const notifictionRouter = require("./routes/notificationRouter")
 
@@ -24,6 +25,7 @@ const app = express()
 app.use(express.json())
 app.use(cookieParser())
 app.use("/tweeter/users", userRouter)
+app.use("/tweeter/block", blockRouter)
 app.use("/tweeter/tweets", tweetRouter)
 app.use("/tweeter/follows", followRouter)
 
