@@ -141,7 +141,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new appError("there isno user", 404))
   }
-  if (!user.isVerified){
+  if (!user.isVerified) {
     return next(new appError("this email dont verify registeration"))
   }
   if (!user.refreshToken) {

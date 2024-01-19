@@ -102,7 +102,7 @@ exports.timeLine = catchAsync(async (req, res, next) => {
     {
       $match: { follower: req.user._id }
     },
-    
+
     {
       $lookup: {
         from: "tweets",
@@ -118,7 +118,7 @@ exports.timeLine = catchAsync(async (req, res, next) => {
     {
       $replaceRoot: { newRoot: "$tweet" }
     },
-    
+
     // add date to in day and month and year only to sort it from latest and for each day sort through likesand comments 
     {
       $addFields: {
@@ -133,7 +133,7 @@ exports.timeLine = catchAsync(async (req, res, next) => {
     },
     {
       $sort: {
-        date: -1 , likes: -1 , comments: -1
+        date: -1, likes: -1, comments: -1
       }
     },
     // {
