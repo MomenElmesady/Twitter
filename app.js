@@ -12,7 +12,7 @@ const blockRouter = require("./routes/blockRouter")
 const followRouter = require("./routes/followRouter")
 const notifictionRouter = require("./routes/notificationRouter")
 
-const DB = process.env.DB
+const DB = process.env.DATABASE
 mongoose.connect(DB, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -24,7 +24,8 @@ const app = express()
 
 app.use(express.json())
 app.use(cookieParser())
-app.use("/tweeter/users", userRouter)
+
+app.use("/tweeter/users",userRouter)
 app.use("/tweeter/block", blockRouter)
 app.use("/tweeter/tweets", tweetRouter)
 app.use("/tweeter/follows", followRouter)
@@ -38,6 +39,6 @@ app.use((err, req, res, next) => {
     })
 })
 const port = process.env.PORT || 3939
-app.listen(port, () => {
+app.listen(3939, () => {
     console.log("app.lestining on port 3939")
 })

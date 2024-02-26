@@ -31,7 +31,8 @@ exports.register = catchAsync(async (req, res, next) => {
   const verificationToken = await user.createTokenForValidation()
   await user.save({ validateBeforeSave: false })
   try {
-    sendEmail({ email: user.email, subject: `verify your email (for 10 minutes)`, token: verificationToken })
+    console.log(verificationToken)
+    // sendEmail({ email: user.email, subject: `verify your email (for 10 minutes)`, token: verificationToken })
     res.status(200).json({
       status: `success`,
       message: `token send to email`
@@ -48,6 +49,7 @@ exports.register = catchAsync(async (req, res, next) => {
 exports.verify = catchAsync(async (req, res, next) => {
   let token = req.params.token
   try {
+    console.log(token)
     var decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET); /*extract data*/
   } catch (err) {
     return next(new appError("invalid token"))

@@ -1,9 +1,14 @@
 const catchAsync = require("../utils/catchAsync");
 const Tweet = require("../models/tweetModel")
 const Like = require("../models/likeModel")
+const cache = require('memory-cache');
+let axios = require("axios")
+
 
 
 exports.createTweet = catchAsync(async (req, res, next) => {
+  // in real work the cache is separated storage in server 
+  
   const { content } = req.body;
   // Check if a file is uploaded
   const tweetData = {
@@ -20,6 +25,25 @@ exports.createTweet = catchAsync(async (req, res, next) => {
   }
   // No file uploaded, create tweet without media
   const tweet = await Tweet.create(tweetData);
+  try {
+    const response = await axios.get(`http://localhost:3939/tweeter/follows/getFollowers/${req.user._id}`);
+    // Handle the successful response here
+  
+    // Assign the response data to a variable if needed
+    var data = response.data.data
+  } catch (error) {
+    // Handle errors here
+    console.error('Error:', error.message);
+  }
+  
+    for (i of data){
+      let userId = i.follower._id 
+      var cashed = cache.get(userId)
+      if (cashed){
+        cashed.unshift(tweet)
+        cache.put(userId,cashed,3600000)
+      }
+    }
   res.status(200).json({
     status: "success",
     data: tweet,

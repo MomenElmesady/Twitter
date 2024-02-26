@@ -3,8 +3,69 @@ const catchAsync = require("../utils/catchAsync")
 const multer = require("multer")
 const Notification = require("../models/notificationModel")
 const Follow = require("../models/followingModel")
+const cache = require('memory-cache');
 
 
+
+exports.timeLine = catchAsync(async (req, res, next) => {
+  const key = req.user._id;
+  const cachedData = cache.get(key);
+  if (cachedData){
+    console.log("Return from cache")
+    return res.status(200).json({
+      data: cachedData
+    });
+  }
+  const state = await Follow.aggregate([
+    {
+      $match: { follower: req.user._id }
+    },
+
+    {
+      $lookup: {
+        from: "tweets",
+        localField: "followed",
+        foreignField: "user",
+        as: "tweet"
+      }
+    },
+    {
+      $unwind: '$tweet'
+    },
+    // دخلت للتويت وفكست للاوبجكت الاصلي 
+    {
+      $replaceRoot: { newRoot: "$tweet" }
+    },
+
+    // add date to in day and month and year only to sort it from latest and for each day sort through likesand comments 
+    {
+      $addFields: {
+        date: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$timestamp",
+            timezone: "UTC"
+          }
+        }
+      }
+    },
+    {
+      $sort: {
+        date: -1, likes: -1, comments: -1
+      }
+    },
+    // {
+    //   $project: {
+    //     date: 0
+    //   }
+    // }
+  ]);
+  cache.put(key,state, 3600000)
+  res.status(200).json({
+    data: state
+  });
+});
+// replaceRoot explained in notes 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "userImages")
@@ -96,55 +157,3 @@ exports.getUserNotifications = catchAsync(async (req, res, next) => {
   })
 })
 
-
-exports.timeLine = catchAsync(async (req, res, next) => {
-  const state = await Follow.aggregate([
-    {
-      $match: { follower: req.user._id }
-    },
-
-    {
-      $lookup: {
-        from: "tweets",
-        localField: "followed",
-        foreignField: "user",
-        as: "tweet"
-      }
-    },
-    {
-      $unwind: '$tweet'
-    },
-    // دخلت للتويت وفكست للاوبجكت الاصلي 
-    {
-      $replaceRoot: { newRoot: "$tweet" }
-    },
-
-    // add date to in day and month and year only to sort it from latest and for each day sort through likesand comments 
-    {
-      $addFields: {
-        date: {
-          $dateToString: {
-            format: "%Y-%m-%d",
-            date: "$timestamp",
-            timezone: "UTC"
-          }
-        }
-      }
-    },
-    {
-      $sort: {
-        date: -1, likes: -1, comments: -1
-      }
-    },
-    // {
-    //   $project: {
-    //     date: 0
-    //   }
-    // }
-  ]);
-
-  res.status(200).json({
-    data: state
-  });
-});
-// replaceRoot explained in notes 
