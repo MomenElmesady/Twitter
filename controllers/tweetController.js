@@ -2,13 +2,14 @@ const catchAsync = require("../utils/catchAsync");
 const Tweet = require("../models/tweetModel")
 const Like = require("../models/likeModel")
 const cache = require('memory-cache');
-let axios = require("axios")
+let axios = require("axios");
+const appError = require("authi/appError");
 
 
 
-exports.createTweet = catchAsync(async (req, res, next) => {
+exports.createTweet = (async (req, res, next) => {
   // in real work the cache is separated storage in server 
-  
+
   const { content } = req.body;
   // Check if a file is uploaded
   const tweetData = {
@@ -21,35 +22,26 @@ exports.createTweet = catchAsync(async (req, res, next) => {
     const mediaUrl = req.file.originalname; // Replace with actual media URL
     // Create tweet with mediaUrl
     tweetData.mediaUrl = mediaUrl
-    tweetData.type = "photo"
+    tweetData.type = "photo"  
   }
   // No file uploaded, create tweet without media
   const tweet = await Tweet.create(tweetData);
-  try {
-    const response = await axios.get(`http://localhost:3939/tweeter/follows/getFollowers/${req.user._id}`);
-    // Handle the successful response here
+
+  const response = await axios.get(`http://localhost:3939/api/v1/follow/getFollowers/${req.user._id}`);
+  const followersData = response.data.data;
   
-    // Assign the response data to a variable if needed
-    var data = response.data.data
-  } catch (error) {
-    // Handle errors here
-    console.error('Error:', error.message);
+  for (const follower of followersData) {
+    const userId = follower._id;
+    const cachedTweets = cache.get(userId) || [];
+    cachedTweets.unshift(tweet);
+    cache.put(userId, cachedTweets, CACHE_TTL);
   }
-  
-    for (i of data){
-      let userId = i.follower._id 
-      var cashed = cache.get(userId)
-      if (cashed){
-        cashed.unshift(tweet)
-        cache.put(userId,cashed,3600000)
-      }
-    }
+
   res.status(200).json({
     status: "success",
     data: tweet,
   });
-}
-)
+})
 
 exports.getTweet = catchAsync(async (req, res, next) => {
   const tweet = await Tweet.findById(req.params.tweetId)
@@ -60,33 +52,35 @@ exports.getTweet = catchAsync(async (req, res, next) => {
 })
 
 exports.updateTweet = catchAsync(async (req, res, next) => {
-  const newTweet = await Tweet.findByIdAndUpdate(req.params.tweetId, req.body, { new: true })
+  const tweet = await Tweet.findOne({_id:req.params.tweetId,user:req.user})
+  if (!tweet){
+    return next(new appError("This tweet dont belong to this user",403))
+  }
+  tweet.content = req.body.content
+  tweet.save()
   res.status(200).json({
     status: "success",
-    data: newTweet
+    data: tweet
   })
 })
 
 exports.deleteTweet = catchAsync(async (req, res, next) => {
-  await Tweet.findByIdAndRemove(req.params.tweetId)
-  res.status(200).json({
-    status: "success",
-  })
-})
+  const tweet = await Tweet.findOne({ _id: req.params.tweetId, user: req.user });
 
-// we can use aggregate like (getAllFollowers) its better in performance 
-exports.getLikes = catchAsync(async (req, res, next) => {
-  const likes = await Like.find({ tweet: req.params.tweetId }).populate("user", "name profilePic");
-  const likeNames = likes.map((like) => ({
-    name: like.user.name,
-    photo: like.user.profilePic,
-    id: like.user._id,
-  }));
+  if (!tweet) {
+    return next(new appError("This tweet doesn't belong to this user", 403));
+  }
+
+  // If the tweet exists and belongs to the user, delete it
+  await tweet.remove();
+
   res.status(200).json({
     status: "success",
-    data: likeNames,
+    message: "Tweet deleted successfully",
   });
 });
+
+
 
 exports.getTweetsForUser = catchAsync(async (req, res, next) => {
   const tweetsquery = Tweet.find({ user: req.params.userId }).sort({ timestamp: -1, likes: -1 })
@@ -100,3 +94,5 @@ exports.getTweetsForUser = catchAsync(async (req, res, next) => {
     data: tweets
   })
 })
+
+const CACHE_TTL = 3600000; // Define a named constant for cache TTL

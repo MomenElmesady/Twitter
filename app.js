@@ -3,6 +3,12 @@ dotenv.config({ path: "./.env" })
 const mongoose = require("mongoose")
 const express = require("express")
 const cookieParser = require("cookie-parser")
+const passport = require('passport');
+
+const cookieSession = require('cookie-session');
+const passportSetup = require('./utils/passport-setup');
+
+
 
 
 // routes 
@@ -11,6 +17,9 @@ const tweetRouter = require("./routes/tweetRouter")
 const blockRouter = require("./routes/blockRouter")
 const followRouter = require("./routes/followRouter")
 const notifictionRouter = require("./routes/notificationRouter")
+const likeRouter = require("./routes/likeRouter")
+const commentRouter = require("./routes/commentRouter")
+const retweetRouter = require("./routes/retweetRouter")
 
 const DB = process.env.DATABASE
 mongoose.connect(DB, {
@@ -21,16 +30,39 @@ mongoose.connect(DB, {
 
 
 const app = express()
+// auth with google+
+app.get('/google', passport.authenticate('google', {
+    scope: ['profile']
+}));
+
+// callback route for google to redirect to
+// hand control to passport to use code to grab profile info
+app.get('/auth/google/redirect', passport.authenticate('google'), (req, res) => {
+    // res.send(req.user);
+    res.redirect('/');
+});
 
 app.use(express.json())
 app.use(cookieParser())
 
-app.use("/tweeter/users",userRouter)
-app.use("/tweeter/block", blockRouter)
-app.use("/tweeter/tweets", tweetRouter)
-app.use("/tweeter/follows", followRouter)
+// set up session cookies
+app.use(cookieSession({
+    maxAge: 24 * 60 * 60 * 1000,
+    keys: [process.env.COOKIE_KEY]
+}));
 
-app.use("/tweeter/notifications", notifictionRouter)
+// initialize passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use("/api/v1/user", userRouter)
+app.use("/api/v1/block", blockRouter)
+app.use("/api/v1/tweet", tweetRouter)
+app.use("/api/v1/follow", followRouter)
+app.use("/api/v1/like", likeRouter)
+app.use("/api/v1/comment", commentRouter)
+app.use("/api/v1/retweet", retweetRouter)
+app.use("/api/v1/notification", notifictionRouter)
 
 app.use((err, req, res, next) => {
     res.status(err.statusCode || 500).json({
@@ -39,6 +71,6 @@ app.use((err, req, res, next) => {
     })
 })
 const port = process.env.PORT || 3939
-app.listen(3939, () => {
+app.listen(port, () => {
     console.log("app.lestining on port 3939")
 })

@@ -10,7 +10,7 @@ const cache = require('memory-cache');
 exports.timeLine = catchAsync(async (req, res, next) => {
   const key = req.user._id;
   const cachedData = cache.get(key);
-  if (cachedData){
+  if (cachedData) {
     console.log("Return from cache")
     return res.status(200).json({
       data: cachedData
@@ -60,7 +60,7 @@ exports.timeLine = catchAsync(async (req, res, next) => {
     //   }
     // }
   ]);
-  cache.put(key,state, 3600000)
+  cache.put(key, state, 3600000)
   res.status(200).json({
     data: state
   });
@@ -99,7 +99,13 @@ const upload = multer({
 exports.uploadProfilePic = upload.single("profilePic")
 exports.uploadCover = upload.single("cover")
 
-
+exports.getAllUsers = catchAsync(async(req,res,next)=>{
+  const users = await User.find()
+  res.status(200).json({
+    status: "success",
+    data: users
+  })
+})
 exports.getUser = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.params.userId)
   res.status(200).json({
@@ -156,4 +162,3 @@ exports.getUserNotifications = catchAsync(async (req, res, next) => {
     data: notifications
   })
 })
-

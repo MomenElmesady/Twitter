@@ -8,12 +8,12 @@ const router = express.Router()
 
 // follow operation 
 // 1-> follow
-router.post("/follow/:followedId", authController.protect, followController.follow)
+router.post("/:followedId", authController.protect, followController.follow)
 // 2-> unfollow
-router.post("/unFollow/:followedId", authController.protect, followController.unFollow)
+router.delete("/:followedId", authController.protect, followController.unFollow)
 // 3-> get followers and following 
 router.get("/getFollowers/:userId", followController.getAllFollowers)
-router.get("/getFollowing/:userId", followController.getAllFollowing)
+router.get("/getFollowings/:userId", followController.getAllFollowing)
 
 // search
 router.get("/searchInFollowers/:userId",followController.searchInFollowers)

@@ -7,12 +7,12 @@ const tweetSchema = mongoose.Schema({
     ref: "Tweet",
     default: null
   },
-  user:{
+  user: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
-    required: true 
+    required: true
   },
-  timestamp : {
+  timestamp: {
     type: Date,
     default: Date.now()
   },
@@ -29,7 +29,7 @@ const tweetSchema = mongoose.Schema({
   // text describe the tweet
   content: {
     type: String,
-    default: null 
+    default: null
   },
   likes: {
     type: Number,
@@ -44,5 +44,7 @@ const tweetSchema = mongoose.Schema({
     default: 0
   }
 })
+
+tweetSchema.index({ user: 1, _id: 1 })
 
 module.exports = mongoose.model("Tweet", tweetSchema)

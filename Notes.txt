@@ -15,7 +15,7 @@ here we find all object and select tweet from it and to select fields from popul
 to upload photo with tweet or comment we use multer middleWare before createTweet, 
 check in createTweet if there is file create tweet with photo path else create simple tweet 
 
-[[copare]]
+[[compare]]
 In terms of performance, the aggregation pipeline approach might be more efficient for larger datasets because 
 it minimizes the data transferred between the database and the application. 
 Additionally, if you have indexes on the relevant fields (name, _id, follower, followed), the performance can be further optimized.
@@ -48,3 +48,10 @@ This stage is particularly useful when you want to reshape the output of your ag
 Now, after these stages, you have a document structure with a field named "tweet" containing the content of the matching tweets.
 The $replaceRoot stage is introduced to replace the root document with the content of the "tweet" field, 
 effectively promoting "tweet" to the top-level structure.
+
+
+--------------------------
+difference between store the token in cookie and in database? 
+  we should store it in cookie to access it in requests but why we store it in database ?
+    we store it in database to compare the refreshToken which send in cookie with the stored in database for more security.
+

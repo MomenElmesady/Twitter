@@ -61,39 +61,47 @@ const userSchema = mongoose.Schema({
     type: String,
     default: ""
   },
-  refreshToken: {
-    type: String,
-    default: ""
-  },
   passwordResetToken: String,
   passwordResetExpires: Date,
+  passwordResetVerified: {
+    type: Boolean,
+    default: false
+  },
+  googleId: {
+    type: String,
+    default: null
+  }
 })
 
-userSchema.pre("save",async function(next){
+userSchema.pre("save", async function (next) {
   if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password,12)
+  this.password = await bcrypt.hash(this.password, 12)
   this.passwordConfirm = undefined
   next()
 })
 
-userSchema.methods.createPasswordResetToken = async function(){
-  const resetToken = crypto.randomBytes(32).toString('hex') 
+userSchema.methods.createPasswordResetToken = async function () {
+  const resetToken = crypto.randomBytes(32).toString('hex')
   this.passwordResetToken = crypto.createHash('sha256')
-  .update(resetToken)
-  .digest('hex');
+    .update(resetToken)
+    .digest('hex');
 
-  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; 
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
   return resetToken
 }
 
-userSchema.methods.createTokenForValidation = async function(){
-  const verificationToken = await jwt.sign({email: this.email},  process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN })
+// userSchema.methods.createTokenForValidation
+userSchema.methods.createTokenForValidation = async function () {
+  const verificationToken = crypto.randomBytes(32).toString('hex');
 
-  this.verificationToken = crypto.createHash("sha256")
-  .update(verificationToken)
-  .digest('hex')
+  // Update the verificationToken property of the user instance
+  let newVerificationToken = crypto.createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+  this.verificationToken = newVerificationToken
+  return verificationToken;
+};
 
-  return verificationToken
-}
+userSchema.index({ name: 1 })
 
 module.exports = mongoose.model("User", userSchema)

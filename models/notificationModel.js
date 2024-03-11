@@ -25,5 +25,6 @@ const notificationSchema = mongoose.Schema({
   }
 })
 
+notificationSchema.index({ user: 1 })
 
 module.exports = mongoose.model("Notification", notificationSchema)

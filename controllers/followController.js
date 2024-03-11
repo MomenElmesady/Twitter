@@ -6,16 +6,19 @@ const User = require("../models/userModel")
 const appError = require("../utils/appError")
 
 // refacored 
-exports.follow = (async (req, res, next) => {
+exports.follow = catchAsync(async (req, res, next) => {
   const follower = req.user._id
   const followed = req.params.followedId
   // console.log(typeof followed,typeof follower._id) ==> string , object so we use == not === 
   if (followed == follower) {
     return next(new appError("User cant follow himSelf", 403))
   }
-  // index check if user follow the person already 
+  let follow = await Follow.findOne({ follower, followed })
+  if (follow) {
+    return next(new appError("cant duplicate follow", 400))
+  }
 
-  const follow = await Follow.create({ follower: follower._id, followed })
+  follow = await Follow.create({ follower, followed })
   await User.updateMany({ _id: { $in: [follower, followed] } }, { $inc: { following: +1, followers: +1 } }
   )
 
@@ -92,6 +95,7 @@ exports.unFollow = catchAsync(async (req, res, next) => {
 //     })
 //   }
 // })
+
 // search by name in someone followers 
 exports.searchInFollowers = catchAsync(async (req, res, next) => {
   const nameToSearch = req.body.name;
@@ -127,7 +131,6 @@ exports.searchInFollowers = catchAsync(async (req, res, next) => {
     data: followersWithMatchingName,
   });
 });
-
 
 // search by name in someone followeings 
 exports.searchInFollowings = catchAsync(async (req, res, next) => {
@@ -171,25 +174,22 @@ exports.searchInFollowings = catchAsync(async (req, res, next) => {
 If you need more complex data manipulations or have a larger dataset where performance is critical, getAllFollowers with aggregation might be more suitable.*/
 
 exports.getAllFollowers = catchAsync(async (req, res, next) => {
-  const followers = await Follow.aggregate([
+  const followers = await User.aggregate([
     {
-      $match: { followed: mongoose.Types.ObjectId(req.params.userId) },
+      $match: { _id: mongoose.Types.ObjectId(req.params.userId) },
     },
     {
       $lookup: {
-        from: 'users',
-        localField: 'follower',
-        foreignField: '_id',
+        from: 'follows',
+        localField: '_id',
+        foreignField: 'followed',
         as: 'follower',
       },
     },
     {
-      $unwind: '$follower', // Unwind the array created by $lookup
-    },
-    {
       $project: {
-        _id: 0,
-        follower: { _id: 1, name: 1 }, // Include only the _id and name fields
+        _id: 1,
+        name: 1, // Include only the _id and name fields
       },
     },
   ]);
@@ -206,25 +206,22 @@ i execute it before aggregate but in postman time of request i found that aggreg
 const followers = await Follow.find({ follower: req.params.userId }).select("followed -_id").populate("followed","name"); 
 */
 exports.getAllFollowing = catchAsync(async (req, res, next) => {
-  const followings = await Follow.aggregate([
+  const followings = await User.aggregate([
     {
-      $match: { follower: mongoose.Types.ObjectId(req.params.userId) },
+      $match: { _id: mongoose.Types.ObjectId(req.params.userId) },
     },
     {
       $lookup: {
-        from: 'users',
-        localField: 'followed',
-        foreignField: '_id',
+        from: 'follows',
+        localField: '_id',
+        foreignField: 'followed',
         as: 'followed',
       },
     },
     {
-      $unwind: '$followed', // Unwind the array created by $lookup
-    },
-    {
       $project: {
-        _id: 0,
-        followed: { _id: 1, name: 1 }, // Include only the _id and name fields
+        _id: 1,
+        name: 1, // Include only the _id and name fields
       },
     },
   ]);

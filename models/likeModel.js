@@ -14,5 +14,6 @@ const likeSchema = mongoose.Schema({
   },
 })
 
-likeSchema.index({tweet: 1})
+likeSchema.index({ tweet: 1 })
+
 module.exports = mongoose.model("Like", likeSchema)
