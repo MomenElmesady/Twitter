@@ -1,52 +1,61 @@
-start at 17/12/2023
+# Twitter API 
 
+## Technologies 
+JavaScript, Node.js, Express.js, JWT, Nodemon, MongoDB, Mongoose 
 
-1-> refactor routes 
-2-> get all likes for tweet 
-3-> comment 
-4-> what is the best route to create like from 
+## Description
+The Twitter API is a backend service that provides endpoints for various social media operations, including user registration, authentication, tweeting, following, liking, commenting, and retweeting.
 
+## Key Features 
+- User registration and authentication
+- Tweet creation, retrieval, update, and deletion
+- Following and unfollowing other users
+- Liking tweets
+- Posting and retrieving comments on tweets
+- Retweeting tweets
 
+## Routes
 
+### User Routes
 
-1-> complete comment 
-2-> refactor routes 
+- **POST /api/v1/user/register**: Register a new user.
+- **POST /api/v1/user/login**: Log in an existing user.
+- **POST /api/v1/user/logout**: Log out the current user.
+- **GET /api/v1/user/getMe**: Get current user details.
+- **PATCH /api/v1/user/updateMe**: Update current user details.
+- **DELETE /api/v1/user/:userId**: Delete a user.
 
+### Tweet Routes
 
-[26/12/2023 1 : 30 AM --tue ] and i should execute this tasks in next days 
-1->(done) how does select work with populate and what does it return and how to select some fields 
-2-> create any routes use sort pagination limit and so on 
-3-> use middleWares and methods in models 
-4-> implement notifcations 
+- **POST /api/v1/tweet**: Create a new tweet.
+- **GET /api/v1/tweet/:tweetId**: Get a specific tweet.
+- **PATCH /api/v1/tweet/:tweetId**: Update a tweet.
+- **DELETE /api/v1/tweet/:tweetId**: Delete a tweet.
 
-[(30-31)/12/2023 1 : 30 AM --(sat-sun)] and i should execute this tasks in next days 
-1-> look at twitter notification and routers and controllers in chat gpt chats and implement them (Done)
-2-> convert every thing in tweetRouter to nested routes and create router for each model (X)
-3-> sort the tweets due to timestamp before find (Done)
-4-> convert create notification to each function(follow, like, ...)(Done)
-5-> show notifications for user and mark the unreades ones (Done)
+### Follow Routes
 
+- **POST /api/v1/follow/:followedId**: Follow a user.
+- **DELETE /api/v1/follow/:followedId**: Unfollow a user.
+- **GET /api/v1/follow/getFollowers/:userId**: Get followers of a user.
+- **GET /api/v1/follow/getFollowings/:userId**: Get users followed by a user.
 
-[1/1/2024 2 : 15 AM --mon] and i should execute this tasks tomorow 
-1-> review getFollowing (Done)
-2-> complete searchInFollowings (Done)
-3-> upload photo in tweet (Done)
+### Like Routes
 
+- **POST /api/v1/like/:tweetId**: Like a tweet.
+- **GET /api/v1/like/getAllLikes/:tweetId**: Get likes for a tweet.
 
+### Comment Routes
 
-[3/1/2024 2 : 15 AM --mon] 
-1-> refactor follow operations (Done)
-2-> compare between follow before and after refactor and why we refactor (Done)
-3-> review search in followers and followings (Done)
-4-> refactor other routes (still user and auth) (Done)
-5-> create indexs in all collections and search in index concept (in chat gpt [index]) (Work on next stage)
-6-> add block operations(Done) 
+- **POST /api/v1/comment/:tweetId**: Post a comment on a tweet.
+- **GET /api/v1/comment/getAllComments/:tweetId**: Get comments for a tweet.
 
-[6/1/2024 2 : 15 AM --sat]
-1-> still search about indexing and know what is (Use MongoDB's explain method ) and (Use the MongoDB Profiler) -> there is photo in whatsapp
-2-> watch vedio [mongo arctecture on hussine nasser] and other database vedios 
+### Retweet Routes
 
+- **POST /api/v1/retweet/:tweetId**: Retweet a tweet.
+- **DELETE /api/v1/retweet/:retweetId**: Delete a retweet.
+- **GET /api/v1/retweet/:userId**: Get retweets by a user.
 
+### Authentication
 
+The API uses JSON Web Tokens (JWT) for authentication. After registering or logging in, users receive a JWT token that they need to include in the headers of subsequent requests for protected routes.
 
-/////// review timeLine and refactor it and add block and mute (Done)
