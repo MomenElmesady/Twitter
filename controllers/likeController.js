@@ -1,43 +1,53 @@
 const Like = require("../models/likeModel");
 const Tweet = require("../models/tweetModel");
-const Notification = require("../models/notificationModel")
 const catchAsync = require("../utils/catchAsync");
+const findElementById = require("../functions/getElementById")
+const createNotification = require("../functions/createNotification")
+const deleteElementById = require("../functions/deleteElementById")
+const sendResponse = require("../functions/sendResponse")
 
-exports.like = catchAsync(async (req, res, next) => {
-  const tweet = await Tweet.findById(req.params.tweetId)
+
+
+exports.like = (async (req, res, next) => {
+  const tweet = await findElementById(Tweet, req.params.tweetId);
   let message = ''
-  const checkLike = await Like.findOne({ user: req.user._id, tweet: tweet._id })
+  const checkLike = await Like.findOne({ tweet: tweet._id, user: req.user._id })
   if (checkLike) {
-    await Tweet.findByIdAndUpdate(tweet._id,{likes:tweet.likes-1})
-    await Like.findByIdAndDelete(checkLike._id)
+    await unlikeTweet(tweet, checkLike)
     message = "Like deleted"
   }
   else {
-    await Tweet.findByIdAndUpdate(tweet._id,{likes:tweet.likes+1})
-    await Like.create({ user: req.user._id, tweet: tweet._id })
-    await Notification.create({
-      user: tweet.user,
-      type: "like",
-      content: `${req.user.name} like your tweet ${tweet._id}.`
-    })
+    await likeTweet(tweet, req.user)
+    await createNotification(`${req.user.name} like your tweet ${tweet._id}.`, req.user._id, "like")
     message = "Like created"
   }
-  res.status(200).json({
-    status: "success",
-    message
-  })
+  sendResponse(res, null, message)
 })
 
 // we can use aggregate like (getAllFollowers) its better in performance 
 exports.getLikes = catchAsync(async (req, res, next) => {
   const likes = await Like.find({ tweet: req.params.tweetId }).populate("user", "name profilePic");
-  const likeNames = likes.map((like) => ({
+  const likeNames = handleUsers(likes)
+  sendResponse(res, likeNames)
+});
+
+async function unlikeTweet(tweet, like) {
+  await Tweet.findByIdAndUpdate(tweet._id, { $inc: { likes: -1 } });
+  await deleteElementById(Like, like._id);
+}
+
+async function likeTweet(tweet, user) {
+  await Tweet.findByIdAndUpdate(tweet._id, { $inc: { likes: 1 } });
+  await Like.create({ user: user._id, tweet: tweet._id });
+}
+
+
+
+function handleUsers(likes) {
+  return likes.map((like) => ({
     name: like.user.name,
     photo: like.user.profilePic,
     id: like.user._id,
   }));
-  res.status(200).json({
-    status: "success",
-    data: likeNames,
-  });
-});
+
+}

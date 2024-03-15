@@ -3,7 +3,10 @@ const catchAsync = require("../utils/catchAsync")
 const multer = require("multer")
 const Notification = require("../models/notificationModel")
 const Follow = require("../models/followingModel")
+const getData = require("../functions/getData")
 const cache = require('memory-cache');
+const deleteElementById = require("../functions/deleteElementById")
+const sendResponse = require("../functions/sendResponse")
 
 
 
@@ -12,59 +15,26 @@ exports.timeLine = catchAsync(async (req, res, next) => {
   const cachedData = cache.get(key);
   if (cachedData) {
     console.log("Return from cache")
-    return res.status(200).json({
-      data: cachedData
-    });
+    sendResponse(res,cachedData)
   }
-  const state = await Follow.aggregate([
-    {
-      $match: { follower: req.user._id }
-    },
-
-    {
-      $lookup: {
-        from: "tweets",
-        localField: "followed",
-        foreignField: "user",
-        as: "tweet"
-      }
-    },
-    {
-      $unwind: '$tweet'
-    },
-    // دخلت للتويت وفكست للاوبجكت الاصلي 
-    {
-      $replaceRoot: { newRoot: "$tweet" }
-    },
-
-    // add date to in day and month and year only to sort it from latest and for each day sort through likesand comments 
-    {
-      $addFields: {
-        date: {
-          $dateToString: {
-            format: "%Y-%m-%d",
-            date: "$timestamp",
-            timezone: "UTC"
-          }
-        }
-      }
-    },
-    {
-      $sort: {
-        date: -1, likes: -1, comments: -1
-      }
-    },
-    // {
-    //   $project: {
-    //     date: 0
-    //   }
-    // }
-  ]);
-  cache.put(key, state, 3600000)
-  res.status(200).json({
-    data: state
-  });
+  const timeLine = await getTimelineData(req.user._id)
+  if (timeLine.length > 0)
+    cache.put(key, timeLine, 3600000)
+  sendResponse(res,timeLine)
 });
+
+const getTimelineData = async (userId) => {
+  const timelineData = await Follow.aggregate([
+    { $match: { follower: userId } },
+    { $lookup: { from: "tweets", localField: "followed", foreignField: "user", as: "tweet" } },
+    { $unwind: '$tweet' },
+    { $replaceRoot: { newRoot: "$tweet" } },
+    { $addFields: { date: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp", timezone: "UTC" } } } },
+    { $sort: { date: -1, likes: -1, comments: -1 } }
+  ]);
+  return timelineData;
+};
+
 // replaceRoot explained in notes 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -100,45 +70,31 @@ exports.uploadProfilePic = upload.single("profilePic")
 exports.uploadCover = upload.single("cover")
 
 exports.getAllUsers = catchAsync(async(req,res,next)=>{
-  const users = await User.find()
-  res.status(200).json({
-    status: "success",
-    data: users
-  })
+  const users = await getData(User,{})
+  sendResponse(res,users)
+  
 })
 exports.getUser = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.params.userId)
-  res.status(200).json({
-    status: "success",
-    message: "User found successfully",
-    data: user
-  })
+  sendResponse(res,user,"User found successfully")
 })
 
 exports.deleteUser = catchAsync(async (req, res, next) => {
-  await User.findByIdAndDelete(req.params.userId)
-  res.status(200).json({
-    status: "success",
-    message: "User deleted successfully",
-  })
+  deleteElementById(User,req.params.user_id)
+  sendResponse(res,null,"User deleted successfully")
 })
 
 exports.updateMe = (async (req, res, next) => {
   const filterdUser = filterObject(req.body, "name", "Bio")
   const updatedUser = await User.findByIdAndUpdate(req.user._id, filterdUser, { new: true })
-  res.status(200).json({
-    status: "success",
-    message: "User updated successfully",
-    data: updatedUser
-  })
+  
+  sendResponse(res,updatedUser,"User updated successfully")
 })
 
 exports.getMe = catchAsync(async (req, res, next) => {
   const user = req.user
-  res.status(200).json({
-    status: "success",
-    data: user
-  })
+  sendResponse(res,user)
+
 })
 
 exports.updatePhoto = (photo) => {
@@ -146,19 +102,14 @@ exports.updatePhoto = (photo) => {
     const user = req.user
     user[photo] = req.file.path
     await user.save({ validateBeforeSave: false })
-    res.status(200).json({
-      status: "success",
-      data: user
-    })
+    sendResponse(res,user)
   }
 }
 
 // get notifications for user and mark the unread 
 exports.getUserNotifications = catchAsync(async (req, res, next) => {
-  const notifications = await Notification.find({ user: req.user._id })
+  const notifications = await getData(Notification,{ user: req.user._id })
   await Notification.updateMany({ user: req.user._id, isRead: false }, { $set: { isRead: true } });
-  res.status(200).json({
-    status: "success",
-    data: notifications
-  })
+  sendResponse(res,notifications)
+
 })

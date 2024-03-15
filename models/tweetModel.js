@@ -1,5 +1,4 @@
 const mongoose = require("mongoose")
-const validator = require("validator")
 
 const tweetSchema = mongoose.Schema({
   tweet: {
@@ -45,6 +44,6 @@ const tweetSchema = mongoose.Schema({
   }
 })
 
-tweetSchema.index({ user: 1, _id: 1 })
+tweetSchema.index({ user: 1 })
 
 module.exports = mongoose.model("Tweet", tweetSchema)

@@ -37,7 +37,7 @@ exports.register = catchAsync(async (req, res, next) => {
     <p>Follow this link to verfiy your account. </p><a href= 'http://localhost:3939/api/v1/user/verify/${verificationToken}'> Click </a>
     `,
 
-      sendEmail({ email: user.email, subject: `verify your email (for 10 minutes)`, html: html })
+      await sendEmail({ email: user.email, subject: `verify your email (for 10 minutes)`, html: html })
 
     res.status(200).json({
       status: `success`,
@@ -78,7 +78,7 @@ exports.sendVerivicationEmail = catchAsync(async (req, res, next) => {
     <p>Follow this link to verfiy your account. </p><a href= 'http://localhost:3939/api/v1/user/verify/${verificationToken}'> Click </a>
     `,
 
-      sendEmail({ email: user.email, subject: `verify your email (for 10 minutes)`, html: html })
+      await sendEmail({ email: user.email, subject: `verify your email (for 10 minutes)`, html: html })
     res.status(200).json({
       status: `success`,
       message: `token send to email`
@@ -176,7 +176,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     <p>Follow this link . </p><a href= 'http://localhost:3939/api/v1/user/verifyPasswordToken/${resetToken}'> Click </a>
     `,
 
-      sendEmail({ email: user.email, subject: `verify your email (for 10 minutes)`, html: html })
+      await sendEmail({ email: user.email, subject: `verify your email (for 10 minutes)`, html: html })
   }
   catch (err) {
     return next(new appError("error in sending email", 404))

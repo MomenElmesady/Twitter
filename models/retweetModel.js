@@ -1,5 +1,4 @@
 const mongoose = require("mongoose")
-const validator = require("validator")
 
 const reTweetSchema = mongoose.Schema({
   user: {
@@ -18,8 +17,7 @@ const reTweetSchema = mongoose.Schema({
   },
 })
 
-reTweetSchema.index({ user: 1, tweet: 1 }, { unique: true })
-
+reTweetSchema.index({ user: 1 })
 
 reTweetSchema.pre(/^find/,function(next){
   this.select("tweet, -_id").populate({

@@ -1,107 +1,108 @@
 const mongoose = require("mongoose")
-const Notification = require("../models/notificationModel")
 const Follow = require("../models/followingModel")
 const catchAsync = require("../utils/catchAsync")
 const User = require("../models/userModel")
 const appError = require("../utils/appError")
+const createNotification = require("../functions/createNotification")
+const createElement = require("../functions/createElement")
+const sendResponse = require("../functions/sendResponse")
 
-// refacored 
 exports.follow = catchAsync(async (req, res, next) => {
-  const follower = req.user._id
-  const followed = req.params.followedId
-  // console.log(typeof followed,typeof follower._id) ==> string , object so we use == not === 
+  const follower = req.user._id;
+  const followed = req.params.followedId;
+
+  let follow = await Follow.findOne({ follower, followed });
+
+
+  if (validateFollow(follower, followed, next, follow)) {
+    return; // we add this return to make the function stop before go to the next line becouse going to the error middleware have time cost 
+  }
+
+  follow = await createElement(Follow,{ follower, followed })
+  await updateFollowCounts(follower, followed, 1);
+  await createNotification(`${req.user.name} started following you.`, followed, "follow");
+
+  sendResponse(res,follow,"Follow operation was successful, and a notification has been sent.")
+});
+
+function validateFollow(follower, followed, next, follow) {
   if (followed == follower) {
-    return next(new appError("User cant follow himSelf", 403))
+    next(new appError("User cannot follow themselves", 403));
+    return true; // Validation fails, exit the function
   }
-  let follow = await Follow.findOne({ follower, followed })
   if (follow) {
-    return next(new appError("cant duplicate follow", 400))
+    next(new appError("Cannot duplicate follow", 400));
+    return true; // Validation fails, exit the function
   }
+  return false; // Validation passes, continue with the function
+}
 
-  follow = await Follow.create({ follower, followed })
-  await User.updateMany({ _id: { $in: [follower, followed] } }, { $inc: { following: +1, followers: +1 } }
-  )
-
-  // create Notification 
-  await Notification.create({
-    user: followed,
-    type: "follow",
-    content: `${req.user.name} follow you.`
-  })
-  res.status(200).json({
-    status: "success",
-    data: follow,
-    message: "follow happend successfully and notification send."
-  })
-})
-
-// exports.unFollow = catchAsync(async (req, res, next) => {
-//   const follower = req.user
-//   const followed = req.params.followedId
-//   const checkIfFollow = await Follow.findOne({ follower: follower._id, followed })
-//   if (!checkIfFollow) {
-//     return next(new appError("The follower is not follow the followed", 403))
-//   }
-//   follower.following -= 1
-//   follower.save({ validateBeforeSave: false })
-//   const followedUser = await User.findById(followed)
-//   followedUser.followers -= 1
-//   followedUser.save({ validateBeforeSave: false })
-//   await Follow.deleteOne({ _id: checkIfFollow._id })
-//   res.status(200).json({
-//     status: "success",
-//     message: "the unfollow happend successfully"
-//   })
-// })
-
-// refctored 
 exports.unFollow = catchAsync(async (req, res, next) => {
   const followerId = req.user._id;
   const followedId = req.params.followedId;
 
-  const result = await Follow.findOneAndDelete({ follower: followerId, followed: followedId });
+  const unfollowResult = await unfollowUser(followerId, followedId);
 
-  if (!result) {
+  if (!unfollowResult) {
     return next(new appError("The follower is not following the specified user", 403));
   }
 
-  // Update followers and following counts in a single query
-  await User.updateMany(
-    { _id: { $in: [followerId, followedId] } },
-    { $inc: { following: -1, followers: -1 } }
-  );
+  await updateFollowCounts(followerId, followedId, -1);
 
-  res.status(200).json({
-    status: "success",
-    message: "Unfollow operation successful",
-  });
+  sendResponse(res,null,"Unfollow operation successful")
 });
 
-// before refactor 
-// exports.searchInFollowers = catchAsync(async (req, res, next) => {
-//   const users = await User.find({ name: req.body.name })
-//   const userIds = users.map(user => user._id);
-//   const isFollow = await Follow.findOne({ follower: { $in: userIds }, followed: req.params.userId }).populate("follower", "name")
-//   if (isFollow) {
-//     res.status(200).json({
-//       status: "success",
-//       data: isFollow.follower
-//     })
-//   }
-//   else {
-//     res.status(200).json({
-//       status: "success",
-//       data: null
-//     })
-//   }
-// })
+exports.getAllFollowing = catchAsync(async (req, res, next) => {
+  const userId = mongoose.Types.ObjectId(req.params.userId);
 
-// search by name in someone followers 
+  const followings = await fetchAllFollowing(userId);
+
+  sendResponse(res,followings)
+  
+  
+});
+
+exports.searchInFollowings = catchAsync(async (req, res, next) => {
+  const nameToSearch = req.body.name;
+  const userId = mongoose.Types.ObjectId(req.params.userId);
+  
+  const followingsWithMatchingName = await searchFollowingsByName(nameToSearch, userId);
+  sendResponse(res,followingsWithMatchingName)
+});
+
 exports.searchInFollowers = catchAsync(async (req, res, next) => {
   const nameToSearch = req.body.name;
   const userId = mongoose.Types.ObjectId(req.params.userId);
+  const followersWithMatchingName = await searchFollowersByName(nameToSearch, userId);
+  sendResponse(res,followersWithMatchingName)
+  
+});
 
-  const followersWithMatchingName = await User.aggregate([
+exports.getAllFollowers = catchAsync(async (req, res, next) => {
+  const userId = mongoose.Types.ObjectId(req.params.userId);
+  const followers = await fetchAllFollowers(userId);
+  sendResponse(res,followers)
+});
+
+
+
+
+
+async function unfollowUser(followerId, followedId) {
+  return await Follow.findOneAndDelete({ follower: followerId, followed: followedId });
+}
+
+async function updateFollowCounts(followerId, followedId, change) {
+  await User.updateMany(
+    { _id: { $in: [followerId, followedId] } },
+    { $inc: { following: change, followers: change } }
+  );
+}
+
+// search by name in someone followers 
+
+async function searchFollowersByName(nameToSearch, userId) {
+  return await User.aggregate([
     {
       $match: { name: nameToSearch },
     },
@@ -125,19 +126,13 @@ exports.searchInFollowers = catchAsync(async (req, res, next) => {
       },
     },
   ]);
+}
 
-  res.status(200).json({
-    status: 'success',
-    data: followersWithMatchingName,
-  });
-});
 
 // search by name in someone followeings 
-exports.searchInFollowings = catchAsync(async (req, res, next) => {
-  const nameToSearch = req.body.name;
-  const userId = mongoose.Types.ObjectId(req.params.userId);
 
-  const followersWithMatchingName = await User.aggregate([
+async function searchFollowingsByName(nameToSearch, userId) {
+  return await User.aggregate([
     {
       $match: { name: nameToSearch },
     },
@@ -161,22 +156,18 @@ exports.searchInFollowings = catchAsync(async (req, res, next) => {
       },
     },
   ]);
-
-  res.status(200).json({
-    status: 'success',
-    data: followersWithMatchingName,
-  });
-});
+}
 
 
 // there is two way of finding followers and following i dont know what is better 
 /* If your use case requires simple queries and readability is a priority, getAllFollowing might be a good choice.
 If you need more complex data manipulations or have a larger dataset where performance is critical, getAllFollowers with aggregation might be more suitable.*/
 
-exports.getAllFollowers = catchAsync(async (req, res, next) => {
-  const followers = await User.aggregate([
+
+async function fetchAllFollowers(userId) {
+  return await User.aggregate([
     {
-      $match: { _id: mongoose.Types.ObjectId(req.params.userId) },
+      $match: { _id: userId },
     },
     {
       $lookup: {
@@ -193,22 +184,13 @@ exports.getAllFollowers = catchAsync(async (req, res, next) => {
       },
     },
   ]);
-
-  res.status(200).json({
-    status: 'success',
-    data: followers,
-  });
-});
+}
 
 
-/*
-i execute it before aggregate but in postman time of request i found that aggregate is better 
-const followers = await Follow.find({ follower: req.params.userId }).select("followed -_id").populate("followed","name"); 
-*/
-exports.getAllFollowing = catchAsync(async (req, res, next) => {
-  const followings = await User.aggregate([
+async function fetchAllFollowing(userId) {
+  return await User.aggregate([
     {
-      $match: { _id: mongoose.Types.ObjectId(req.params.userId) },
+      $match: { _id: userId },
     },
     {
       $lookup: {
@@ -225,8 +207,4 @@ exports.getAllFollowing = catchAsync(async (req, res, next) => {
       },
     },
   ]);
-  res.status(200).json({
-    status: "success",
-    data: followings
-  })
-});
+}

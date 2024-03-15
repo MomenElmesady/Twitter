@@ -1,43 +1,27 @@
 const Block = require("../models/blockModel")
 const Follow = require("../models/followingModel")
 const catchAsync = require("../utils/catchAsync")
+const createElement = require("../functions/createElement")
+const deleteElement = require("../functions/deleteElement")
+const sendResponse = require("../functions/sendResponse")
 
 exports.createBlock = catchAsync(async (req,res,next)=>{
-  if (req.user._id == req.params.blockId){
-    return res.status(404).json({
-      status: "fail",
-      message: "user cant block himself"
-    })
-  }
-  await Block.create({
+
+  await createElement(Block,{
     user: req.user._id,
     blocked: req.params.blockedId
   })
   await Follow.findOneAndDelete({follower: req.user._id,followed: req.params.blockedId})
   await Follow.findOneAndDelete({followed: req.user._id,follower: req.params.blockedId})
-  res.status(200).json({
-    status: "success",
-    message: "block happend successfully"
-  })
+  sendResponse(res,null,"block happend successfully")
 })
 
 exports.deleteBlock = catchAsync(async(req,res,next)=>{
-  let message = ""
-  const block = await Block.findOneAndDelete({
+  await deleteElement(Block,{
     user: req.user._id,
     blocked: req.params.blockedId
   })
-  if (block){
-    message = "block deleted successfully"
-  }
-  else {
-    message = "cant find this block"
-  }
-
-  res.status(200).json({
-    status: "success",
-    message
-  })
+  sendResponse(res,null,"block deleted successfully")
 })
 
 exports.isBlock = catchAsync(async(req,res,next)=>{
@@ -46,8 +30,5 @@ exports.isBlock = catchAsync(async(req,res,next)=>{
   if (block){
     isBlocked = true
   } 
-  res.status(200).json({
-    status: "success",
-    isBlocked
-  })
+  sendResponse(res,isBlocked)
 })
