@@ -20,6 +20,7 @@ const notifictionRouter = require("./routes/notificationRouter")
 const likeRouter = require("./routes/likeRouter")
 const commentRouter = require("./routes/commentRouter")
 const retweetRouter = require("./routes/retweetRouter")
+const authRouter = require("./routes/authRoutser")
 
 const DB = process.env.DATABASE
 mongoose.connect(DB, {
@@ -63,6 +64,7 @@ app.use("/api/v1/like", likeRouter)
 app.use("/api/v1/comment", commentRouter)
 app.use("/api/v1/retweet", retweetRouter)
 app.use("/api/v1/notification", notifictionRouter)
+app.use("/api/v1/auth", authRouter)
 
 app.use((err, req, res, next) => {
     res.status(err.statusCode || 500).json({
