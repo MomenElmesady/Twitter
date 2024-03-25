@@ -6,8 +6,10 @@ const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+router.use(authController.protect)
+
 // comment -> i design it like tweet but add filed refer to tweet 
-router.post("/:tweetId", authController.protect, upload.single("mediaUrl"), commentController.createComment)
-router.get("/getAllComments/:tweetId", authController.protect, commentController.getAllCommentsForTweet)
+router.post("/:tweetId", upload.single("mediaUrl"), commentController.createComment)
+router.get("/getAllComments/:tweetId", commentController.getAllCommentsForTweet)
 
 module.exports = router

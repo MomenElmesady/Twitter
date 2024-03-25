@@ -4,8 +4,8 @@ const likeController = require("../controllers/likeController")
 const router = express.Router()
 
 
+router.get("/getAllLikes/:tweetId", likeController.getLikes)
 // like 
 router.post("/:tweetId", authController.protect, likeController.like)
-router.get("/getAllLikes/:tweetId", likeController.getLikes)
 
 module.exports = router

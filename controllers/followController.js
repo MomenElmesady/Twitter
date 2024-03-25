@@ -27,7 +27,7 @@ exports.follow = catchAsync(async (req, res, next) => {
 
 function validateFollow(follower, followed, next, follow) {
   if (followed == follower) {
-    next(new appError("User cannot follow themselves", 403));
+    next(new appError("User cannot follow himself", 403));
     return true; // Validation fails, exit the function
   }
   if (follow) {
@@ -88,7 +88,7 @@ exports.unfollowUser = async function (followerId, followedId) {
   return deleted
 }
 
-async function updateFollowCounts (followerId, followedId, change) {
+async function updateFollowCounts(followerId, followedId, change) {
 
   await User.updateOne(
     { _id: followerId },
