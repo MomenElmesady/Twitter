@@ -4,15 +4,18 @@ const catchAsync = require("../utils/catchAsync")
 const createElement = require("../functions/createElement")
 const deleteElement = require("../functions/deleteElement")
 const sendResponse = require("../functions/sendResponse")
+const appError = require("authi/appError")
+const updateFollowCounts = require("./followController").updateFollowCounts
+const unfollowUser = require("./followController").unfollowUser
 
 exports.createBlock = catchAsync(async (req,res,next)=>{
-
   await createElement(Block,{
     user: req.user._id,
     blocked: req.params.blockedId
   })
-  await Follow.findOneAndDelete({follower: req.user._id,followed: req.params.blockedId})
-  await Follow.findOneAndDelete({followed: req.user._id,follower: req.params.blockedId})
+  unfollowUser(req.user._id,req.params.blockedId)
+  unfollowUser(req.params.blockedId,req.user._id)
+
   sendResponse(res,null,"block happend successfully")
 })
 
@@ -25,10 +28,10 @@ exports.deleteBlock = catchAsync(async(req,res,next)=>{
 })
 
 exports.isBlock = catchAsync(async(req,res,next)=>{
-  var isBlocked = false
-  const block = await Block.findOne({user: req.body.user, blocked: req.body.blocked})
-  if (block){
-    isBlocked = true
+  const blockOne = await Block.findOne({user: req.user._id, blocked: req.params.followedId})
+  const blockTwo = await Block.findOne({user: req.params.followedId, blocked: req.user._id})
+  if (blockOne || blockTwo){
+    return next(new appError("Cant follow when there is block",401))
   } 
-  sendResponse(res,isBlocked)
+  next()
 })

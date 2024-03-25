@@ -15,7 +15,7 @@ const blockSchema = mongoose.Schema({
 })
 blockSchema.pre('save', function(next) {
   // Check if the user is trying to block themselves
-  if (this.user.toString() === this.blockId.toString()) {
+  if (this.user.toString() === this.blocked.toString()) {
     const err = new appError("User can't block themselves",400);
     return next(err);
   }

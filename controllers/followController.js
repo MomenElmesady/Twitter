@@ -18,11 +18,11 @@ exports.follow = catchAsync(async (req, res, next) => {
     return; // we add this return to make the function stop before go to the next line becouse going to the error middleware have time cost 
   }
 
-  follow = await createElement(Follow,{ follower, followed })
+  follow = await createElement(Follow, { follower, followed })
   await updateFollowCounts(follower, followed, 1);
   await createNotification(`${req.user.name} started following you.`, followed, "follow");
 
-  sendResponse(res,follow,"Follow operation was successful, and a notification has been sent.")
+  sendResponse(res, follow, "Follow operation was successful, and a notification has been sent.")
 });
 
 function validateFollow(follower, followed, next, follow) {
@@ -41,15 +41,12 @@ exports.unFollow = catchAsync(async (req, res, next) => {
   const followerId = req.user._id;
   const followedId = req.params.followedId;
 
-  const unfollowResult = await unfollowUser(followerId, followedId);
+  const unfollowResult = await this.unfollowUser(followerId, followedId);
 
   if (!unfollowResult) {
-    return next(new appError("The follower is not following the specified user", 403));
+    return next(new appError("Cant find this Follow", 404))
   }
-
-  await updateFollowCounts(followerId, followedId, -1);
-
-  sendResponse(res,null,"Unfollow operation successful")
+  sendResponse(res, null, "Unfollow operation successful")
 });
 
 exports.getAllFollowing = catchAsync(async (req, res, next) => {
@@ -57,45 +54,53 @@ exports.getAllFollowing = catchAsync(async (req, res, next) => {
 
   const followings = await fetchAllFollowing(userId);
 
-  sendResponse(res,followings)
-  
-  
+  sendResponse(res, followings)
+
 });
 
 exports.searchInFollowings = catchAsync(async (req, res, next) => {
   const nameToSearch = req.body.name;
   const userId = mongoose.Types.ObjectId(req.params.userId);
-  
+
   const followingsWithMatchingName = await searchFollowingsByName(nameToSearch, userId);
-  sendResponse(res,followingsWithMatchingName)
+  sendResponse(res, followingsWithMatchingName)
 });
 
 exports.searchInFollowers = catchAsync(async (req, res, next) => {
   const nameToSearch = req.body.name;
   const userId = mongoose.Types.ObjectId(req.params.userId);
   const followersWithMatchingName = await searchFollowersByName(nameToSearch, userId);
-  sendResponse(res,followersWithMatchingName)
-  
+  sendResponse(res, followersWithMatchingName)
+
 });
 
 exports.getAllFollowers = catchAsync(async (req, res, next) => {
   const userId = mongoose.Types.ObjectId(req.params.userId);
   const followers = await fetchAllFollowers(userId);
-  sendResponse(res,followers)
+  sendResponse(res, followers)
 });
 
-
-
-
-
-async function unfollowUser(followerId, followedId) {
-  return await Follow.findOneAndDelete({ follower: followerId, followed: followedId });
+exports.unfollowUser = async function (followerId, followedId) {
+  const deleted = await Follow.findOneAndDelete({ follower: followerId, followed: followedId });
+  if (deleted) {
+    await updateFollowCounts(followerId, followedId, -1)
+  }
+  return deleted
 }
 
-async function updateFollowCounts(followerId, followedId, change) {
-  await User.updateMany(
-    { _id: { $in: [followerId, followedId] } },
-    { $inc: { following: change, followers: change } }
+async function updateFollowCounts (followerId, followedId, change) {
+
+  await User.updateOne(
+    { _id: followerId },
+    {
+      $inc: { following: change }
+    }
+  );
+  await User.updateOne(
+    { _id: followedId },
+    {
+      $inc: { followers: change }
+    }
   );
 }
 

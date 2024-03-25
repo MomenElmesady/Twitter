@@ -55,3 +55,7 @@ difference between store the token in cookie and in database?
   we should store it in cookie to access it in requests but why we store it in database ?
     we store it in database to compare the refreshToken which send in cookie with the stored in database for more security.
 
+
+still -> 1) modify the auth error in sending wrong password (Done)  
+2) refactor all auth.protect put it once 
+3) review the related operations in all and in follow spacificlly 

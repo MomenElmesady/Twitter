@@ -3,7 +3,11 @@ const blockController = require("../controllers/blockController")
 const authController = require("../controllers/authController")
 const router = express.Router()
 
-router.route("/:blockedId").post(authController.protect,blockController.createBlock).delete(authController.protect,blockController.deleteBlock)
 router.get("/isBlock", blockController.isBlock)
+
+router.use(authController.protect)
+router.route("/:blockedId").post(blockController.createBlock)
+.delete(blockController.deleteBlock)
+
 
 module.exports = router

@@ -97,12 +97,12 @@ exports.login = catchAsync(async (req, res, next) => {
   }
   const user = await User.findOne({ email })
   if (!user) {
-    return next(new appError("There is no user with this email"))
+    return next(new appError("Wrong email or password"))
   }
   const isPasswordMatch = await bcrypt.compare(password, user.password)
 
   if (!isPasswordMatch) {
-    return next(new appError("Wrong password"))
+    return next(new appError("Wrong email or password"))
   }
   createAndSendToken(user, 200, res)
 })
