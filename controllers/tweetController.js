@@ -8,6 +8,7 @@ const getElement = require("../functions/getElement");
 const createElement = require("../functions/createElement");
 const sendResponse = require("../functions/sendResponse")
 
+
 exports.createTweet = (async (req, res, next) => {
   // in real work the cache is separated storage in server 
   const { content } = req.body;
@@ -48,7 +49,7 @@ exports.getTweetsForUser = catchAsync(async (req, res, next) => {
 
 async function findTweetsByUser(userId, page, limit) {
   const skip = (page - 1) * limit;
-  const tweets = await Tweet.find({ user: userId })
+  const tweets = await getElement(Tweet,{ user: userId }) 
     .sort({ timestamp: -1, likes: -1 })
     .skip(skip)
     .limit(limit);

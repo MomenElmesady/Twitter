@@ -8,6 +8,7 @@ router.route("/:userId").get(userController.getUser)
 .delete(userController.deleteUser)
 router.get("/", userController.getAllUsers)
 
+// Protect all
 router.use(authController.protect)
 router.get("/timeLine",userController.timeLine)
 router.patch("/updateProfile",  userController.uploadProfilePic, userController.updatePhoto("profilePic"))

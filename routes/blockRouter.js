@@ -4,7 +4,7 @@ const authController = require("../controllers/authController")
 const router = express.Router()
 
 router.get("/isBlock", blockController.isBlock)
-
+// Protect all
 router.use(authController.protect)
 router.route("/:blockedId").post(blockController.createBlock)
 .delete(blockController.deleteBlock)

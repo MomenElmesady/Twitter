@@ -25,16 +25,16 @@ passport.use(
       if (currentUser) {
         // already have this user
         console.log('user is: ', currentUser);
-        done(null, currentUser);
+        done(null, currentUser); // to indicate successful authentication.
       } else {
         // if not, create user in our db
         new User({
           googleId: profile.id,
           name: profile.displayName,
-          isverified: true 
+          isverified: true
         }).save().then((newUser) => {
           console.log('created new user: ', newUser);
-          done(null, newUser);
+          done(null, newUser); // to indicate successful authentication with the newly created user.
         });
       }
     });

@@ -4,7 +4,8 @@ const catchAsync = require("../utils/catchAsync");
 const findElementById = require("../functions/getElementById")
 const createNotification = require("../functions/createNotification")
 const deleteElementById = require("../functions/deleteElementById")
-const sendResponse = require("../functions/sendResponse")
+const sendResponse = require("../functions/sendResponse");
+const createElement = require("../functions/createElement");
 
 
 
@@ -38,7 +39,7 @@ async function unlikeTweet(tweet, like) {
 
 async function likeTweet(tweet, user) {
   await Tweet.findByIdAndUpdate(tweet._id, { $inc: { likes: 1 } });
-  await Like.create({ user: user._id, tweet: tweet._id });
+  await createElement(Like,{ user: user._id, tweet: tweet._id })
 }
 
 

@@ -7,20 +7,19 @@ const getData = require("../functions/getData")
 const cache = require('memory-cache');
 const deleteElementById = require("../functions/deleteElementById")
 const sendResponse = require("../functions/sendResponse")
-
-
+const getElementById = require("../functions/getElementById")
 
 exports.timeLine = catchAsync(async (req, res, next) => {
   const key = req.user._id;
   const cachedData = cache.get(key);
   if (cachedData) {
     console.log("Return from cache")
-    sendResponse(res,cachedData)
+    sendResponse(res, cachedData)
   }
   const timeLine = await getTimelineData(req.user._id)
   if (timeLine.length > 0)
     cache.put(key, timeLine, 3600000)
-  sendResponse(res,timeLine)
+  sendResponse(res, timeLine)
 });
 
 const getTimelineData = async (userId) => {
@@ -69,31 +68,31 @@ const upload = multer({
 exports.uploadProfilePic = upload.single("profilePic")
 exports.uploadCover = upload.single("cover")
 
-exports.getAllUsers = catchAsync(async(req,res,next)=>{
-  const users = await getData(User,{})
-  sendResponse(res,users)
-  
+exports.getAllUsers = catchAsync(async (req, res, next) => {
+  const users = await getData(User, {})
+  sendResponse(res, users)
 })
+
 exports.getUser = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.params.userId)
-  sendResponse(res,user,"User found successfully")
+  const user = await getElementById(User,req.params.userId)
+  sendResponse(res, user, "User found successfully")
 })
 
 exports.deleteUser = catchAsync(async (req, res, next) => {
-  deleteElementById(User,req.params.user_id)
-  sendResponse(res,null,"User deleted successfully")
+  deleteElementById(User, req.params.user_id)
+  sendResponse(res, null, "User deleted successfully")
 })
 
 exports.updateMe = (async (req, res, next) => {
   const filterdUser = filterObject(req.body, "name", "Bio")
   const updatedUser = await User.findByIdAndUpdate(req.user._id, filterdUser, { new: true })
-  
-  sendResponse(res,updatedUser,"User updated successfully")
+
+  sendResponse(res, updatedUser, "User updated successfully")
 })
 
 exports.getMe = catchAsync(async (req, res, next) => {
   const user = req.user
-  sendResponse(res,user)
+  sendResponse(res, user)
 
 })
 
@@ -102,14 +101,13 @@ exports.updatePhoto = (photo) => {
     const user = req.user
     user[photo] = req.file.path
     await user.save({ validateBeforeSave: false })
-    sendResponse(res,user)
+    sendResponse(res, user)
   }
 }
 
 // get notifications for user and mark the unread 
 exports.getUserNotifications = catchAsync(async (req, res, next) => {
-  const notifications = await getData(Notification,{ user: req.user._id })
+  const notifications = await getData(Notification, { user: req.user._id })
   await Notification.updateMany({ user: req.user._id, isRead: false }, { $set: { isRead: true } });
-  sendResponse(res,notifications)
-
+  sendResponse(res, notifications)
 })

@@ -7,10 +7,7 @@ const passport = require('passport');
 const errorController = require("./controllers/errorController")
 
 const cookieSession = require('cookie-session');
-const passportSetup = require('./utils/passport-setup');
-
-
-
+require('./utils/passport-setup');
 
 // routes 
 const userRouter = require("./routes/userRouter")

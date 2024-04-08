@@ -5,6 +5,7 @@ const router = express.Router()
 
 router.get("/:userId", retweetController.getReTweetsForUser)
 
+// Protect all
 router.use(authController.protect)
 router.post("/:tweetId", retweetController.retweet)
 router.delete("/:retweetId", retweetController.deleteRetweet)
