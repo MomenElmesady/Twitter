@@ -13,7 +13,6 @@ exports.follow = catchAsync(async (req, res, next) => {
 
   let follow = await Follow.findOne({ follower, followed });
 
-
   if (validateFollow(follower, followed, next, follow)) {
     return; // we add this return to make the function stop before go to the next line becouse going to the error middleware have time cost 
   }
@@ -28,13 +27,13 @@ exports.follow = catchAsync(async (req, res, next) => {
 function validateFollow(follower, followed, next, follow) {
   if (followed == follower) {
     next(new appError("User cannot follow himself", 403));
-    return true; // Validation fails, exit the function
+    return true; 
   }
   if (follow) {
     next(new appError("Cannot duplicate follow", 400));
-    return true; // Validation fails, exit the function
+    return true; 
   }
-  return false; // Validation passes, continue with the function
+  return false; 
 }
 
 exports.unFollow = catchAsync(async (req, res, next) => {
@@ -105,7 +104,6 @@ async function updateFollowCounts(followerId, followedId, change) {
 }
 
 // search by name in someone followers 
-
 async function searchFollowersByName(nameToSearch, userId) {
   return await User.aggregate([
     {
@@ -185,7 +183,7 @@ async function fetchAllFollowers(userId) {
     {
       $project: {
         _id: 1,
-        name: 1, // Include only the _id and name fields
+        name: 1, 
       },
     },
   ]);
@@ -208,7 +206,7 @@ async function fetchAllFollowing(userId) {
     {
       $project: {
         _id: 1,
-        name: 1, // Include only the _id and name fields
+        name: 1, 
       },
     },
   ]);

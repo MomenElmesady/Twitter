@@ -20,9 +20,10 @@ exports.retweet = catchAsync(async (req, res, next) => {
 })
 
 exports.deleteRetweet = catchAsync(async (req, res, next) => {
-  const retweet = await deleteElementById(Retweet, req.params.retweetId)
-  Tweet.findByIdAndUpdate(retweet.tweet, { $inc: { retweets: -1 } })
-  sendResponse(res, null, "deleted successfully")
+  const retweet = await getElement(Retweet, { _id: req.params.retweetId, user: req.user._id })
+  // If the tweet exists and belongs to the user, delete it
+  await retweet.remove();
+  sendResponse(res, null, "Retweet deleted successfully")
 })
 
 exports.getReTweetsForUser = catchAsync(async (req, res, next) => {

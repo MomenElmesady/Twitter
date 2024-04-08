@@ -1,4 +1,5 @@
 const Tweet = require("../models/tweetModel");
+const Comment = require("../models/commentModel");
 const catchAsync = require("../utils/catchAsync");
 const findElementById = require("../functions/getElementById")
 const createNotification = require("../functions/createNotification")
@@ -13,13 +14,13 @@ exports.createComment = catchAsync(async (req, res, next) => {
   await createNotification( `${user.name} commented on your tweet ${tweet._id}.`, req.user._id,"comment");
 
   const commentData = prepareCommentData(req);
-  const comment = await createElement(Tweet,commentData);
+  const comment = await createElement(Comment,commentData);
 
   sendResponse(res,comment)
 });
 
 exports.getAllCommentsForTweet = catchAsync(async (req, res, next) => {
-  const comments = await getData(Tweet,{tweet: req.params.tweetId});
+  const comments = await getData(Comment,{tweet: req.params.tweetId});
   sendResponse(res,comments)
 });
 
