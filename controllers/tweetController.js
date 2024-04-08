@@ -8,8 +8,6 @@ const getElement = require("../functions/getElement");
 const createElement = require("../functions/createElement");
 const sendResponse = require("../functions/sendResponse")
 
-
-
 exports.createTweet = (async (req, res, next) => {
   // in real work the cache is separated storage in server 
   const { content } = req.body;
@@ -24,9 +22,12 @@ exports.getTweet = catchAsync(async (req, res, next) => {
   sendResponse(res,tweet)
 })
 
-exports.updateTweet = catchAsync(async (req, res, next) => {
-    const tweet = await getElement(Tweet, { _id: req.params.tweetId, user: req.user })
-    tweet.content = req.body.content
+exports.updateTweet = (async (req, res, next) => {
+  // console.log(req.file)
+    let tweet = await getElement(Tweet, { _id: req.params.tweetId, user: req.user })
+    const content = req.body.content || tweet.content
+    const tweetData = prepareTweet(content,req.user._id,req.file)
+    tweet = await Tweet.findByIdAndUpdate(tweet._id,tweetData)
     tweet.save()
     sendResponse(res,tweet)
 })
