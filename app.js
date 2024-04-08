@@ -4,6 +4,7 @@ const mongoose = require("mongoose")
 const express = require("express")
 const cookieParser = require("cookie-parser")
 const passport = require('passport');
+const errorController = require("./controllers/errorController")
 
 const cookieSession = require('cookie-session');
 const passportSetup = require('./utils/passport-setup');
@@ -66,13 +67,9 @@ app.use("/api/v1/retweet", retweetRouter)
 app.use("/api/v1/notification", notifictionRouter)
 app.use("/api/v1/auth", authRouter)
 
-app.use((err, req, res, next) => {
-    res.status(err.statusCode || 500).json({
-        status: err.statusText || "error",
-        message: err.message
-    })
-})
+app.use(errorController)
+
 const port = process.env.PORT || 3939
 app.listen(port, () => {
-    console.log("app.lestining on port 3939")
+    console.log(`app.lestining on port ${port}`)
 })

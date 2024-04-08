@@ -57,5 +57,7 @@ difference between store the token in cookie and in database?
 
 
 still -> 1) modify the auth error in sending wrong password (Done)  
-2) refactor all auth.protect put it once 
+2) refactor all auth.protect put it once (Done)
 3) review the related operations in all and in follow spacificlly 
+4) add tweet likes and comments and retweet (numbers)
+5) handle notification using webSocket server  

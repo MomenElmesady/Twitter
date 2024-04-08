@@ -1,11 +1,6 @@
 const mongoose = require("mongoose")
 
 const tweetSchema = mongoose.Schema({
-  tweet: {
-    type: mongoose.Schema.ObjectId,
-    ref: "Tweet",
-    default: null
-  },
   user: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
