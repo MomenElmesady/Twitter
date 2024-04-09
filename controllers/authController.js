@@ -62,7 +62,7 @@ exports.verify =
     const user = await User.findOne({ verificationToken: token });
 
     if (!user) {
-      return next(new appError("There is no user with this email", 403));
+      return next(new appError("Cant veify!", 403));
     }
     user.isVerified = true;
     await user.save({ validateBeforeSave: false });
