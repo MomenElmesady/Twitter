@@ -76,6 +76,7 @@ exports.searchInFollowers = catchAsync(async (req, res, next) => {
 exports.getAllFollowers = catchAsync(async (req, res, next) => {
   const userId = mongoose.Types.ObjectId(req.params.userId);
   const followers = await fetchAllFollowers(userId);
+  console.log(followers)
   sendResponse(res, followers)
 });
 
@@ -168,46 +169,49 @@ If you need more complex data manipulations or have a larger dataset where perfo
 
 
 async function fetchAllFollowers(userId) {
-  return await User.aggregate([
+  // return Follow.find({ followed: userId })
+  return await Follow.aggregate([
     {
-      $match: { _id: userId },
+      $match: { followed: userId }
     },
     {
       $lookup: {
-        from: 'follows',
-        localField: '_id',
-        foreignField: 'followed',
-        as: 'follower',
-      },
+        from: 'users',
+        localField: 'follower',
+        foreignField: '_id',
+        as: 'followerInfo' // Rename the field to avoid conflicts
+      }
     },
     {
       $project: {
-        _id: 1,
-        name: 1, 
-      },
-    },
+        _id: { $arrayElemAt: ['$followerInfo._id', 0] }, // Access the first element of the array
+        name: { $arrayElemAt: ['$followerInfo.name', 0] }
+      }
+    }
   ]);
+  
+  
 }
 
 
 async function fetchAllFollowing(userId) {
-  return await User.aggregate([
+  return await Follow.aggregate([
     {
-      $match: { _id: userId },
+      $match: { follower: userId }
     },
     {
       $lookup: {
-        from: 'follows',
-        localField: '_id',
-        foreignField: 'followed',
-        as: 'followed',
-      },
+        from: 'users',
+        localField: 'followed',
+        foreignField: '_id',
+        as: 'followedInfo' // Rename the field to avoid conflicts
+      }
     },
     {
       $project: {
-        _id: 1,
-        name: 1, 
-      },
-    },
+        _id: { $arrayElemAt: ['$followedInfo._id', 0] }, // Access the first element of the array
+        name: { $arrayElemAt: ['$followedInfo.name', 0] }
+      }
+    }
   ]);
 }

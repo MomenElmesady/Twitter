@@ -14,7 +14,7 @@ exports.timeLine = catchAsync(async (req, res, next) => {
   const cachedData = cache.get(key);
   if (cachedData) {
     console.log("Return from cache")
-    sendResponse(res, cachedData)
+    return sendResponse(res, cachedData)
   }
   const timeLine = await getTimelineData(req.user._id)
   if (timeLine.length > 0)
@@ -92,7 +92,6 @@ exports.updateMe = (async (req, res, next) => {
 
 exports.getMe = catchAsync(async (req, res, next) => {
   const user = req.user
-  console.log(user)
   sendResponse(res, user)
 
 })

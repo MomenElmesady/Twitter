@@ -8,8 +8,9 @@ const getData = require("../functions/getData")
 const sendResponse = require("../functions/sendResponse")
 
 
-exports.createComment = catchAsync(async (req, res, next) => {
+exports.createComment = (async (req, res, next) => {
   const tweet = await findElementById(Tweet,req.params.tweetId);
+  const user = req.user
 
   await createNotification( `${user.name} commented on your tweet ${tweet._id}.`, req.user._id,"comment");
 

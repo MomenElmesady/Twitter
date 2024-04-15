@@ -134,7 +134,6 @@ exports.protect = catchAsync(async (req, res, next) => {
     return next(new appError("invalid token"))
   }
   const user = await User.findById(decoded.id)
-  console.log(decoded.id)
   if (!user) {
     return next(new appError("there is no user", 404))
   }
