@@ -34,7 +34,7 @@ exports.register = catchAsync(async (req, res, next) => {
   await user.save({ validateBeforeSave: false })
   try {
     html = `<h1>Email verfication </h1>
-    <p>Follow this link to verfiy your account. </p><a href= 'http://localhost:3939/api/v1/user/verify/${verificationToken}'> Click </a>
+    <p>Follow this link to verfiy your account. </p><a href= 'http://localhost:3939/api/v1/auth/verify/${verificationToken}'> Click </a>
     `,
 
       await sendEmail({ email: user.email, subject: `verify your email (for 10 minutes)`, html: html })
@@ -75,7 +75,7 @@ exports.sendVerivicationEmail = catchAsync(async (req, res, next) => {
   await user.save({ validateBeforeSave: false })
   try {
     html = `<h1>Email verfication </h1>
-    <p>Follow this link to verfiy your account. </p><a href= 'http://localhost:3939/api/v1/user/verify/${verificationToken}'> Click </a>
+    <p>Follow this link to verfiy your account. </p><a href= 'http://localhost:3939/api/v1/auth/verify/${verificationToken}'> Click </a>
     `,
 
       await sendEmail({ email: user.email, subject: `verify your email (for 10 minutes)`, html: html })
@@ -134,6 +134,7 @@ exports.protect = catchAsync(async (req, res, next) => {
     return next(new appError("invalid token"))
   }
   const user = await User.findById(decoded.id)
+  console.log(decoded.id)
   if (!user) {
     return next(new appError("there is no user", 404))
   }
@@ -173,7 +174,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   await user.save({ validateBeforeSave: false })
   try {
     html = `<h1>Password Reset</h1>
-    <p>Follow this link . </p><a href= 'http://localhost:3939/api/v1/user/verifyPasswordToken/${resetToken}'> Click </a>
+    <p>Follow this link . </p><a href= 'http://localhost:3939/api/v1/auth/verifyPasswordToken/${resetToken}'> Click </a>
     `,
 
       await sendEmail({ email: user.email, subject: `verify your email (for 10 minutes)`, html: html })

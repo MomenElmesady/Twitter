@@ -18,7 +18,7 @@ const notifictionRouter = require("./routes/notificationRouter")
 const likeRouter = require("./routes/likeRouter")
 const commentRouter = require("./routes/commentRouter")
 const retweetRouter = require("./routes/retweetRouter")
-const authRouter = require("./routes/authRoutser")
+const authRouter = require("./routes/authRouter")
 
 const DB = process.env.DATABASE
 mongoose.connect(DB, {

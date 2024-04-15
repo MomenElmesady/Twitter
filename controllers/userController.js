@@ -92,6 +92,7 @@ exports.updateMe = (async (req, res, next) => {
 
 exports.getMe = catchAsync(async (req, res, next) => {
   const user = req.user
+  console.log(user)
   sendResponse(res, user)
 
 })
