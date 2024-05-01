@@ -1,11 +1,11 @@
-const mongoose = require("mongoose")
-const Follow = require("../models/followingModel")
-const catchAsync = require("../utils/catchAsync")
-const User = require("../models/userModel")
-const appError = require("../utils/appError")
-const createNotification = require("../functions/createNotification")
-const createElement = require("../functions/createElement")
-const sendResponse = require("../functions/sendResponse")
+const mongoose = require("mongoose");
+const Follow = require("../models/followingModel");
+const catchAsync = require("../utils/catchAsync");
+const User = require("../models/userModel");
+const appError = require("../utils/appError");
+const createNotification = require("../functions/createNotification");
+const createElement = require("../functions/createElement");
+const sendResponse = require("../functions/sendResponse");
 
 exports.follow = catchAsync(async (req, res, next) => {
   const follower = req.user._id;
@@ -14,14 +14,14 @@ exports.follow = catchAsync(async (req, res, next) => {
   let follow = await Follow.findOne({ follower, followed });
 
   if (validateFollow(follower, followed, next, follow)) {
-    return; // we add this return to make the function stop before go to the next line becouse going to the error middleware have time cost 
+    return; 
   }
 
-  follow = await createElement(Follow, { follower, followed })
+  follow = await createElement(Follow, { follower, followed });
   await updateFollowCounts(follower, followed, 1);
   await createNotification(`${req.user.name} started following you.`, followed, "follow");
 
-  sendResponse(res, follow, "Follow operation was successful, and a notification has been sent.")
+  sendResponse(res, follow, "Follow operation was successful, and a notification has been sent.", 201);
 });
 
 function validateFollow(follower, followed, next, follow) {
@@ -43,9 +43,9 @@ exports.unFollow = catchAsync(async (req, res, next) => {
   const unfollowResult = await this.unfollowUser(followerId, followedId);
 
   if (!unfollowResult) {
-    return next(new appError("Cant find this Follow", 404))
+    return next(new appError("Cant find this Follow", 404));
   }
-  sendResponse(res, null, "Unfollow operation successful")
+  sendResponse(res, null, "Unfollow operation successful");
 });
 
 exports.getAllFollowing = catchAsync(async (req, res, next) => {
@@ -53,8 +53,7 @@ exports.getAllFollowing = catchAsync(async (req, res, next) => {
 
   const followings = await fetchAllFollowing(userId);
 
-  sendResponse(res, followings)
-
+  sendResponse(res, followings);
 });
 
 exports.searchInFollowings = catchAsync(async (req, res, next) => {
@@ -62,34 +61,32 @@ exports.searchInFollowings = catchAsync(async (req, res, next) => {
   const userId = mongoose.Types.ObjectId(req.params.userId);
 
   const followingsWithMatchingName = await searchFollowingsByName(nameToSearch, userId);
-  sendResponse(res, followingsWithMatchingName)
+  sendResponse(res, followingsWithMatchingName);
 });
 
 exports.searchInFollowers = catchAsync(async (req, res, next) => {
   const nameToSearch = req.body.name;
   const userId = mongoose.Types.ObjectId(req.params.userId);
   const followersWithMatchingName = await searchFollowersByName(nameToSearch, userId);
-  sendResponse(res, followersWithMatchingName)
-
+  sendResponse(res, followersWithMatchingName);
 });
 
 exports.getAllFollowers = catchAsync(async (req, res, next) => {
   const userId = mongoose.Types.ObjectId(req.params.userId);
   const followers = await fetchAllFollowers(userId);
-  console.log(followers)
-  sendResponse(res, followers)
+  console.log(followers);
+  sendResponse(res, followers);
 });
 
 exports.unfollowUser = async function (followerId, followedId) {
   const deleted = await Follow.findOneAndDelete({ follower: followerId, followed: followedId });
   if (deleted) {
-    await updateFollowCounts(followerId, followedId, -1)
+    await updateFollowCounts(followerId, followedId, -1);
   }
-  return deleted
-}
+  return deleted;
+};
 
 async function updateFollowCounts(followerId, followedId, change) {
-
   await User.updateOne(
     { _id: followerId },
     {
@@ -104,7 +101,6 @@ async function updateFollowCounts(followerId, followedId, change) {
   );
 }
 
-// search by name in someone followers 
 async function searchFollowersByName(nameToSearch, userId) {
   return await User.aggregate([
     {
@@ -125,15 +121,12 @@ async function searchFollowersByName(nameToSearch, userId) {
     },
     {
       $project: {
-        _id: 1, // Include the _id field
+        _id: 1,
         name: 1,
       },
     },
   ]);
 }
-
-
-// search by name in someone followeings 
 
 async function searchFollowingsByName(nameToSearch, userId) {
   return await User.aggregate([
@@ -155,21 +148,14 @@ async function searchFollowingsByName(nameToSearch, userId) {
     },
     {
       $project: {
-        _id: 1, // Include the _id field
+        _id: 1,
         name: 1,
       },
     },
   ]);
 }
 
-
-// there is two way of finding followers and following i dont know what is better 
-/* If your use case requires simple queries and readability is a priority, getAllFollowing might be a good choice.
-If you need more complex data manipulations or have a larger dataset where performance is critical, getAllFollowers with aggregation might be more suitable.*/
-
-
 async function fetchAllFollowers(userId) {
-  // return Follow.find({ followed: userId })
   return await Follow.aggregate([
     {
       $match: { followed: userId }
@@ -179,20 +165,17 @@ async function fetchAllFollowers(userId) {
         from: 'users',
         localField: 'follower',
         foreignField: '_id',
-        as: 'followerInfo' // Rename the field to avoid conflicts
+        as: 'followerInfo'
       }
     },
     {
       $project: {
-        _id: { $arrayElemAt: ['$followerInfo._id', 0] }, // Access the first element of the array
+        _id: { $arrayElemAt: ['$followerInfo._id', 0] },
         name: { $arrayElemAt: ['$followerInfo.name', 0] }
       }
     }
   ]);
-  
-  
 }
-
 
 async function fetchAllFollowing(userId) {
   return await Follow.aggregate([
@@ -204,12 +187,12 @@ async function fetchAllFollowing(userId) {
         from: 'users',
         localField: 'followed',
         foreignField: '_id',
-        as: 'followedInfo' // Rename the field to avoid conflicts
+        as: 'followedInfo'
       }
     },
     {
       $project: {
-        _id: { $arrayElemAt: ['$followedInfo._id', 0] }, // Access the first element of the array
+        _id: { $arrayElemAt: ['$followedInfo._id', 0] },
         name: { $arrayElemAt: ['$followedInfo.name', 0] }
       }
     }

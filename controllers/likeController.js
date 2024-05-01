@@ -1,35 +1,31 @@
 const Like = require("../models/likeModel");
 const Tweet = require("../models/tweetModel");
 const catchAsync = require("../utils/catchAsync");
-const findElementById = require("../functions/getElementById")
-const createNotification = require("../functions/createNotification")
-const deleteElementById = require("../functions/deleteElementById")
+const findElementById = require("../functions/getElementById");
+const createNotification = require("../functions/createNotification");
+const deleteElementById = require("../functions/deleteElementById");
 const sendResponse = require("../functions/sendResponse");
 const createElement = require("../functions/createElement");
 
-
-
-exports.like = (async (req, res, next) => {
+exports.like = catchAsync(async (req, res, next) => {
   const tweet = await findElementById(Tweet, req.params.tweetId);
-  let message = ''
-  const checkLike = await Like.findOne({ tweet: tweet._id, user: req.user._id })
+  let message = '';
+  const checkLike = await Like.findOne({ tweet: tweet._id, user: req.user._id });
   if (checkLike) {
-    await unlikeTweet(tweet, checkLike)
-    message = "Like deleted"
+    await unlikeTweet(tweet, checkLike);
+    message = "Like deleted";
+  } else {
+    await likeTweet(tweet, req.user);
+    await createNotification(`${req.user.name} like your tweet ${tweet._id}.`, req.user._id, "like");
+    message = "Like created";
   }
-  else {
-    await likeTweet(tweet, req.user)
-    await createNotification(`${req.user.name} like your tweet ${tweet._id}.`, req.user._id, "like")
-    message = "Like created"
-  }
-  sendResponse(res, null, message)
-})
+  sendResponse(res, null, message, 200);
+});
 
-// we can use aggregate like (getAllFollowers) its better in performance 
 exports.getLikes = catchAsync(async (req, res, next) => {
   const likes = await Like.find({ tweet: req.params.tweetId }).populate("user", "name profilePic");
-  const likeNames = handleUsers(likes)
-  sendResponse(res, likeNames)
+  const likeNames = handleUsers(likes);
+  sendResponse(res, likeNames, "Likes retrieved successfully", 200);
 });
 
 async function unlikeTweet(tweet, like) {
@@ -39,10 +35,8 @@ async function unlikeTweet(tweet, like) {
 
 async function likeTweet(tweet, user) {
   await Tweet.findByIdAndUpdate(tweet._id, { $inc: { likes: 1 } });
-  await createElement(Like,{ user: user._id, tweet: tweet._id })
+  await createElement(Like, { user: user._id, tweet: tweet._id });
 }
-
-
 
 function handleUsers(likes) {
   return likes.map((like) => ({
@@ -50,5 +44,4 @@ function handleUsers(likes) {
     photo: like.user.profilePic,
     id: like.user._id,
   }));
-
 }
